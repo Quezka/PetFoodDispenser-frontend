@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import it.quezka.petfooddispenser.databinding.FragmentFirstBinding
 
 /**
@@ -32,8 +32,10 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.buttonFirst.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+        binding.buttonFeed.setOnClickListener {
+            Snackbar
+                .make(view, "Pet Fed!", Snackbar.LENGTH_SHORT)
+                .setAnchorView(R.id.fab).show()
         }
     }
 
