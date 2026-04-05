@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">petFoodDispenser</string>
+    <string name="app_name">Pet Food Dispenser</string>
     <string name="action_settings">Options</string>
     <!-- Strings used for fragments for navigation -->
     <string name="window_label">Smart Pet Food Dispenser</string>
