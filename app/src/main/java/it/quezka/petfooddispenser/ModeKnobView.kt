@@ -1,118 +1,110 @@
 package it.quezka.petfooddispenser
 
-import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.util.AttributeSet
-import android.view.MotionEvent
-import android.view.View
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.abs
 
-class ModeKnobView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+@Composable
+fun ModeKnob(
+    modifier: Modifier = Modifier,
+    onModeChanged: (Int) -> Unit = {}
+) {
+    // State: Which mode is currently selected
+    var currentModeIndex by remember { mutableIntStateOf(0) }
 
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val modes = listOf("1", "2", "3")
+    val modeAngles = listOf(180f, 235f, 290f)
+    val currentAngle = modeAngles[currentModeIndex]
 
-    // 3 discrete modes
-    private val modes = listOf("1", "2", "3")
-    private var currentModeIndex = 0
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Canvas(
+            modifier = Modifier
+                .size(300.dp)
+                .pointerInput(Unit) {
+                    detectDragGestures { change, _ ->
+                        // Calculate angle from touch position
+                        val cx = size.width / 2f
+                        val cy = size.height / 2f
 
-    // Exact angles for each mode (clockwise)
-    private val modeAngles = listOf(
-        180f, // 1
-        235f, // 2
-        290f  // 3
-    )
+                        val touchX = change.position.x - cx
+                        val touchY = change.position.y - cy
 
-    // Current angle shown on the knob
-    private var angle = modeAngles[currentModeIndex]
+                        var touchAngle = Math.toDegrees(atan2(touchY.toDouble(), touchX.toDouble())).toFloat()
+                        if (touchAngle < 0) touchAngle += 360f
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+                        // Determine nearest mode index
+                        val nearest = modeAngles.indices.minBy { i ->
+                            abs(modeAngles[i] - touchAngle)
+                        }
 
-        val cx = width / 2f
-        val cy = height / 2f
-        val radius = minOf(cx, cy) * 0.8f
+                        if (nearest != currentModeIndex) {
+                            currentModeIndex = nearest
+                            onModeChanged(nearest)
+                        }
+                    }
+                }
+        ) {
+            val cx = size.width / 2f
+            val cy = size.height / 2f
+            val radius = size.minDimension * 0.4f
 
-        // Outer ring
-        paint.color = Color.LTGRAY
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 10f
-        canvas.drawCircle(cx, cy, radius + 10, paint)
+            // Outer ring
+            drawCircle(
+                color = Color.LightGray,
+                center = center,
+                radius = radius + 10f,
+                style = Stroke(width = 10f)
+            )
 
-        // Knob body
-        paint.color = Color.DKGRAY
-        paint.style = Paint.Style.FILL
-        canvas.drawCircle(cx, cy, radius, paint)
+            // Knob body
+            drawCircle(
+                color = Color.DarkGray,
+                center = center,
+                radius = radius
+            )
 
-        // Indicator line
-        paint.color = Color.RED
-        paint.strokeWidth = 15f
-        val rad = Math.toRadians(angle.toDouble())
-        val ix = cx + (radius * 0.8f * cos(rad)).toFloat()
-        val iy = cy + (radius * 0.8f * sin(rad)).toFloat()
-        canvas.drawLine(cx, cy, ix, iy, paint)
+            // Indicator line
+            val rad = Math.toRadians(currentAngle.toDouble())
+            val ix = cx + (radius * 0.8f * cos(rad)).toFloat()
+            val iy = cy + (radius * 0.8f * sin(rad)).toFloat()
 
-        // --- RADIAL LABELS ---
-        paint.color = Color.WHITE
-        paint.textSize = 50f
-        paint.textAlign = Paint.Align.CENTER
-
-        val labelRadius = radius + 60f  // distance from center
-
-        for (i in modes.indices) {
-            val a = Math.toRadians(modeAngles[i].toDouble())
-            val lx = cx + (labelRadius * cos(a)).toFloat()
-            val ly = cy + (labelRadius * sin(a)).toFloat() + 15f // vertical centering
-
-            canvas.drawText(modes[i], lx, ly, paint)
+            drawLine(
+                color = Color.Red,
+                start = center,
+                end = Offset(ix, iy),
+                strokeWidth = 15f
+            )
         }
 
         // Mode label at bottom
-        paint.color = Color.WHITE
-        paint.textSize = 40f
-        paint.textAlign = Paint.Align.CENTER
-        canvas.drawText("MODE: ${modes[currentModeIndex]}", cx, cy + radius + 120f, paint)
-    }
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        // Prevent parent scroll views from intercepting
-        parent.requestDisallowInterceptTouchEvent(true)
-
-        val cx = width / 2f
-        val cy = height / 2f
-
-        if (event.action == MotionEvent.ACTION_MOVE || event.action == MotionEvent.ACTION_DOWN) {
-
-            val dx = event.x - cx
-            val dy = event.y - cy
-
-            // Raw angle from touch
-            var touchAngle = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
-            if (touchAngle < 0) touchAngle += 360f
-
-            // Determine nearest mode
-            val snappedIndex = findNearestMode(touchAngle)
-
-            // Update mode + angle (SNAP — no free rotation)
-            currentModeIndex = snappedIndex
-            angle = modeAngles[snappedIndex]
-
-            invalidate()
-            return true
-        }
-
-        return true // Always consume touch events
-    }
-
-    private fun findNearestMode(touchAngle: Float): Int {
-        return modeAngles.indices.minByOrNull { i ->
-            abs(modeAngles[i] - touchAngle)
-        } ?: 0
+        Text(
+            text = "MODE: ${modes[currentModeIndex]}",
+            color = Color.White,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = 16.dp)
+        )
     }
 }
