@@ -31,13 +31,9 @@ An Android application built with Jetpack Compose to remotely control and monito
 
 ### Setup
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/PetFoodDispenser-frontend.git
-   ```
-2. **Open in Android Studio**.
-3. **Build and Run** on your device.
-4. **Configure IP**: On first launch, the app will prompt you for the Server IP Address. Enter the IP of your dispenser (e.g., `192.168.1.50`).
+1. **Download** the app from "Releases" page.
+2. **Install and Run** on your device.
+3. **Configure IP**: On first launch, the app will prompt you for the Server IP Address. Enter the IP of your dispenser (e.g., `192.168.1.50`).
 
 ## 📡 API Integration
 
@@ -45,14 +41,6 @@ The app communicates with the dispenser via a simple HTTP API:
 
 - `GET /get`: Returns a JSON object representing the `DispenserState`.
 - `GET /set?variable=value`: Updates parameters (e.g., `mode`, `cr1_r`, `cr2_r`, `cr3_r`).
-
-## 📦 Building for Release
-
-To generate a signed APK for distribution:
-
-1. Go to **Build > Generate Signed Bundle / APK...**
-2. Follow the wizard to create/use a keystore.
-3. The release build includes R8 minification and resource shrinking to ensure a small footprint.
 
 ## 📄 License
 
