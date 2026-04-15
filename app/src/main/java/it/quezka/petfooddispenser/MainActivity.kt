@@ -1,122 +1,178 @@
 package it.quezka.petfooddispenser
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import dagger.hilt.android.AndroidEntryPoint
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80, background = Color(0xFF000000),
-    surface = Color(0xFF000000),
-    onPrimary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    onPrimaryContainer = Color.White,
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-    background = Color(0xFFF8FDFF),
-    surface = Color(0xFFF8FDFF),
-    onPrimary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    onPrimaryContainer = Color.White,
-)
-
-private val Typography = androidx.compose.material3.Typography(
-    headlineMedium = androidx.compose.ui.text.TextStyle(
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-        fontSize = 28.sp,
-        lineHeight = 36.sp,
-        letterSpacing = 0.sp
-    ),
-    bodyLarge = androidx.compose.ui.text.TextStyle(
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    labelSmall = androidx.compose.ui.text.TextStyle(
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PetFoodDispenserTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    
+    var menuExpanded by remember { mutableStateOf(false) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
+    
+    // Lifecycle Observer to refresh on Resume
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                Log.d("MainScaffold", "App Resumed - Triggering refresh")
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography, // You can define this similarly
-        content = content
-    )
-}
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                actions = {
+                    if (uiState.isProbing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(horizontal = 12.dp).size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        IconButton(onClick = { viewModel.refresh() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = stringResource(R.string.refresh)
+                            )
+                        }
+                    }
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(imageVector = Icons.Filled.Menu, contentDescription = stringResource(R.string.menu))
+                        }
+                        DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.settings)) }, 
+                                onClick = { menuExpanded = false; showSettingsDialog = true }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.about)) }, 
+                                onClick = { menuExpanded = false; showAboutDialog = true }
+                            )
+                        }
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { innerPadding ->
+        MainContent(
+            uiState = uiState,
+            serverIP = uiState.currentServerIp,
+            onRefresh = { viewModel.refresh() },
+            onModeChange = { viewModel.setMode(it) },
+            onValueChange = { index, value -> viewModel.updateRemoteValue(index, value) },
+            onOpenSettings = { showSettingsDialog = true },
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+    
+    // We should ideally observe serverIp from ViewModel in MainScaffold too if needed for display
+    // For now, let's just use a placeholder or collect it
+    
+    if (uiState.error != null && !uiState.isConnected) {
+        AlertDialog(
+            onDismissRequest = { viewModel.refresh() },
+            title = { Text(stringResource(R.string.connection_failed)) },
+            text = { Text(stringResource(R.string.connection_error_msg, "Server", uiState.error!!)) },
+            confirmButton = { 
+                TextButton(onClick = { showSettingsDialog = true; viewModel.refresh() }) { 
+                    Text(stringResource(R.string.settings)) 
+                } 
+            },
+            dismissButton = { 
+                TextButton(onClick = { viewModel.refresh() }) { 
+                    Text(stringResource(R.string.dismiss)) 
+                } 
+            }
+        )
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun FeedScreenPreview() {
-    PetFoodDispenserTheme {
-        FeedScreen(onFeedClick = {})
+    if (showSettingsDialog) {
+        SettingsDialog(
+            serverIP = uiState.currentServerIp,
+            onServerIPChange = { viewModel.updateServerIp(it) },
+            showDebug = uiState.showDebug,
+            onDebugChange = { viewModel.setDebug(it) },
+            onDismiss = { showSettingsDialog = false }
+        )
+    }
+
+    if (showAboutDialog) {
+        AboutDialog(onDismiss = { showAboutDialog = false })
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ModeKnobPreview() {
-    PetFoodDispenserTheme {
-        ModeKnob()
-    }
-}
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            PetFoodDispenserTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                )
-                {
-                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                        FeedScreen(
-                            modifier = Modifier.padding(innerPadding),
-                            onFeedClick = {
-                                // Handle feed click
-                            }
-                        )
-                    }
+        setContent { 
+            PetFoodDispenserTheme { 
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    MainScaffold() 
                 }
-            }
+            } 
         }
     }
 }

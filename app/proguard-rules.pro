@@ -16,6 +16,12 @@
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# GSON rules
+-keep class it.quezka.petfooddispenser.DispenserState { *; }
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class sun.misc.Unsafe { *; }
+-keep class com.google.gson.stream.** { *; }
+
+# Hilt/Dagger rules (usually handled by AAR, but good to have)
+-keep class dagger.hilt.android.internal.managers.** { *; }
