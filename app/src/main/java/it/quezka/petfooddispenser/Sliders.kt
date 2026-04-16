@@ -10,12 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -53,18 +53,26 @@ fun DispenserSlider(
     val context = LocalContext.current
     val vibrator = remember {
         // We use a try-catch here because the Vibrator service isn't always available in Previews
-        try {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.defaultVibrator
-        } catch (e: Exception) {
-            null
-        }
+        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        vibratorManager.defaultVibrator
     }
+    val sliderColors = SliderColors(
+        thumbColor = MaterialTheme.colorScheme.primary,
+        activeTrackColor = MaterialTheme.colorScheme.primary,
+        activeTickColor = MaterialTheme.colorScheme.primary,
+        inactiveTrackColor = MaterialTheme.colorScheme.outline,
+        inactiveTickColor = MaterialTheme.colorScheme.outline,
+        disabledThumbColor = MaterialTheme.colorScheme.outline,
+        disabledActiveTrackColor = MaterialTheme.colorScheme.outline,
+        disabledActiveTickColor = MaterialTheme.colorScheme.outline,
+        disabledInactiveTrackColor = MaterialTheme.colorScheme.outline,
+        disabledInactiveTickColor = MaterialTheme.colorScheme.outline,
+    )
 
     Column(
         modifier = modifier.padding(bottom = 16.dp),
     ) {
-        Text(text = "$label ${if (!enabled) stringResource(R.string.physical_suffix) else ""}")
+        Text(text = label)
         Slider(
             enabled = enabled,
             // valueRange should match the number of labels
@@ -74,10 +82,11 @@ fun DispenserSlider(
             steps = labels.size - 2,
             onValueChange = {
                 if (it != value) {
-                    vibrator?.vibrate(sliderEffect)
+                    vibrator.vibrate(sliderEffect)
                     onValueChange(it)
                 }
             },
+            colors = sliderColors,
         )
         LabelRow(labels = labels)
 
@@ -92,7 +101,7 @@ fun SliderCR1(value: Float, enabled: Boolean = true, onValueChange: (Float) -> U
     DispenserSlider(
         label = stringResource(R.string.selector1_label),
         value = value,
-        labels = listOf("1h", "2h", "3h", "4h", "5h"),
+        labels = listOf("0h", "1h", "2h", "3h", "4h"),
         enabled = enabled,
         onValueChange = onValueChange
     )
@@ -103,7 +112,7 @@ fun SliderCR2(value: Float, enabled: Boolean = true, onValueChange: (Float) -> U
     DispenserSlider(
         label = stringResource(R.string.selector2_label),
         value = value,
-        labels = listOf("1h", "2h", "3h", "4h", "5h"),
+        labels = listOf("3h", "4h", "6h", "8h", "12h"),
         enabled = enabled,
         onValueChange = onValueChange
     )

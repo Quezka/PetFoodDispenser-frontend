@@ -31,4 +31,9 @@
     <string name="open_settings">Open Settings</string>
     <string name="selector2_label">Run Interval</string>
     <string name="selector3_label">Dog Size</string>
+    <string name="close_button">Close</string>
+    <string name="app_desc">A Jetpack Compose application to control an Arduino-powered pet food dispenser via REST API.</string>
+    <string name="app_version" translatable="false">v1.1.1</string>
+    <string name="app_dev">Developed by Quezka</string>
+    <string name="app_credits">for I.I.S. \\\"E. Alessandrini\\\" - Montesilvano</string>
 </resources>

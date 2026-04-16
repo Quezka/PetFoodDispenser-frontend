@@ -32,4 +32,8 @@
     <string name="open_settings">Apri Impostazioni</string>
     <string name="selector2_label">Intervallo Erogazione</string>
     <string name="selector3_label">Taglia del Cane</string>
+    <string name="close_button">Chiudi</string>
+    <string name="app_desc">Un\'App programmata in Kotlin con Jetpack Compose per controllare un dispenser per il cibo degli animali tramite REST API.</string>
+    <string name="app_dev">Creato da Quezka</string>
+    <string name="app_credits">per I.I.S. \\\"E. Alessandrini\\\" - Montesilvano</string>
 </resources>

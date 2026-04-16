@@ -38,8 +38,8 @@ fun SettingsDialog(
     var localShowDebug by remember { mutableStateOf(showDebug) }
     
     val colors = ButtonDefaults.textButtonColors(
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
     )
     AlertDialog(
         onDismissRequest = onDismiss,

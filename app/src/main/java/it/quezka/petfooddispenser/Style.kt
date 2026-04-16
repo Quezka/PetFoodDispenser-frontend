@@ -19,6 +19,7 @@ val DarkColorScheme = darkColorScheme(
     onBackground = OnBackgroundDark,
     onSurface = OnSurfaceDark,
     onPrimaryContainer = OnPrimaryDark,
+    onSecondary = OnSecondaryDark
 )
 
 val LightColorScheme = lightColorScheme(
@@ -31,6 +32,7 @@ val LightColorScheme = lightColorScheme(
     onBackground = OnBackgroundWhite,
     onSurface = OnSurfaceWhite,
     onPrimaryContainer = OnPrimaryWhite,
+    onSecondary = OnSecondaryWhite,
 )
 
 val Typography = androidx.compose.material3.Typography(
