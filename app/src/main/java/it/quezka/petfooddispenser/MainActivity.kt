@@ -133,7 +133,7 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
         AlertDialog(
             onDismissRequest = { /* Don't auto-refresh on dismiss */ },
             title = { Text(stringResource(R.string.connection_failed)) },
-            text = { Text(stringResource(R.string.connection_error_msg, uiState.currentServerIp.ifBlank { "Server" }, uiState.error!!)) },
+            text = { Text(stringResource(R.string.connection_error_msg, uiState.currentServerIp.ifBlank { "Server" })) },
             confirmButton = { 
                 // This just opens settings. The actual refresh happens when SettingsDialog calls updateServerIp
                 TextButton(onClick = { showSettingsDialog = true }) { 

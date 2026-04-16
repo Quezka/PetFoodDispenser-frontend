@@ -7,19 +7,18 @@
     <string name="manual">Manual</string>
     <string name="remote">Remote</string>
     <string name="selector1_label">First Run Delay</string>
-    <string name="physical_suffix">(Physical)</string>
     <string name="position_label">Position: %1$s</string>
     <string name="debug_info">Debug Info:</string>
-    <string name="debug_mode">Mode: %1$s</string>
-    <string name="debug_remote">Rem: %1$.1f, %2$.1f, %3$.1f</string>
-    <string name="debug_physical">Physical: %1$.1f, %2$.1f, %3$.1f</string>
-    <string name="debug_json">JSON: %1$s</string>
+    <string name="debug_mode" translatable="false">Mode: %1$s</string>
+    <string name="debug_remote" translatable="false">Rem: %1$.1f, %2$.1f, %3$.1f</string>
+    <string name="debug_physical" translatable="false">Physical: %1$.1f, %2$.1f, %3$.1f</string>
+    <string name="debug_json" translatable="false">JSON: %1$s</string>
     <string name="refresh">Refresh</string>
     <string name="menu">Menu</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="connection_failed">Connection Failed</string>
-    <string name="connection_error_msg">Could not connect to %1$s.  %2$s</string>
+    <string name="connection_error_msg">Could not connect to %1$s</string>
     <string name="dismiss">Dismiss</string>
     <string name="server_ip_address">Server IP Address</string>
     <string name="ip_placeholder">e.g. 192.168.1.1</string>

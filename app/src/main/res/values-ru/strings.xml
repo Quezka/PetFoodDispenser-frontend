@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Food Dispenser</string>
+    <string name="welcome">Добро Пожаловать!</string>
+    <string name="server_label">Сервер: %1$s</string>
+    <string name="not_connected">Не подключено.</string>
+    <string name="retry_connection">Переподключиться</string>
+    <string name="manual">Ручной</string>
+    <string name="remote">Удалённый</string>
+    <string name="selector1_label">Задержка Первой Подачи</string>
+    <string name="position_label">Положение: %1$s</string>
+    <string name="debug_info">Дебаг</string>
+    <string name="refresh">Обновить</string>
+    <string name="menu">Меню</string>
+    <string name="settings">Настройки</string>
+    <string name="about">О приложении</string>
+    <string name="connection_failed">Не удалось подключиться</string>
+    <string name="connection_error_msg">Невозможно подключиться к %1$s</string>
+    <string name="dismiss">Отмена</string>
+    <string name="server_ip_address">IP Адрес Сервера</string>
+    <string name="ip_placeholder">например 192.168.1.1</string>
+    <string name="show_debug_info">Показать Раздел для Разработчиков</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отменить</string>
+    <string name="setup_required">Необходима Настройка</string>
+    <string name="setup_message">Для начала укажите IP адрес сервера в настройках приложения.</string>
+    <string name="open_settings">Открыть Настройки</string>
+    <string name="selector2_label">Интервал Подачи</string>
+    <string name="selector3_label">Размер Собаки</string>
+    <string name="close_button">Закрыть</string>
+    <string name="app_desc">Приложение, созданное при помощи JetPack Compose-фрэймворка, для управления раздатчиком еды для питомцев на основе Arduino через REST API.</string>
+    <string name="app_dev">Создано Quezka</string>
+    <string name="app_credits">для I.I.S. \\\"E. Alessandrini\\\" - Монтесильвано</string>
+</resources>
