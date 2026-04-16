@@ -1,14 +1,14 @@
 <resources>
-    <string name="app_name">Pet Food Dispenser</string>
+    <string name="app_name">Food Dispenser</string>
     <string name="welcome">Welcome!</string>
     <string name="server_label">Server: %1$s</string>
     <string name="not_connected">Not connected.</string>
     <string name="retry_connection">Retry Connection</string>
     <string name="manual">Manual</string>
     <string name="remote">Remote</string>
-    <string name="selector_label">Selector %1$d</string>
+    <string name="selector1_label">First Run Delay</string>
     <string name="physical_suffix">(Physical)</string>
-    <string name="position_label">Position: %1$d</string>
+    <string name="position_label">Position: %1$s</string>
     <string name="debug_info">Debug Info:</string>
     <string name="debug_mode">Mode: %1$s</string>
     <string name="debug_remote">Rem: %1$.1f, %2$.1f, %3$.1f</string>
@@ -19,7 +19,7 @@
     <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="connection_failed">Connection Failed</string>
-    <string name="connection_error_msg">Could not connect to %1$s.\n\n%2$s</string>
+    <string name="connection_error_msg">Could not connect to %1$s.  %2$s</string>
     <string name="dismiss">Dismiss</string>
     <string name="server_ip_address">Server IP Address</string>
     <string name="ip_placeholder">e.g. 192.168.1.1</string>
@@ -29,4 +29,6 @@
     <string name="setup_required">Setup Required</string>
     <string name="setup_message">Please configure the Server IP address in the settings to start using the app.</string>
     <string name="open_settings">Open Settings</string>
+    <string name="selector2_label">Run Interval</string>
+    <string name="selector3_label">Dog Size</string>
 </resources>

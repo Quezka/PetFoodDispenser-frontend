@@ -59,7 +59,8 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
+            // Only auto-refresh if we aren't waiting for a manual action (like fixing an IP)
+            if (event == Lifecycle.Event.ON_RESUME && !uiState.waitingForManualAction) {
                 Log.d("MainScaffold", "App Resumed - Triggering refresh")
                 viewModel.refresh()
             }
@@ -126,22 +127,22 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
         )
     }
     
-    // We should ideally observe serverIp from ViewModel in MainScaffold too if needed for display
-    // For now, let's just use a placeholder or collect it
-    
-    if (uiState.error != null && !uiState.isConnected) {
+    // Connection Error Dialog
+    // We only show this if there's an error AND we are waiting for a manual action
+    if (uiState.error != null && uiState.waitingForManualAction) {
         AlertDialog(
-            onDismissRequest = { viewModel.refresh() },
+            onDismissRequest = { /* Don't auto-refresh on dismiss */ },
             title = { Text(stringResource(R.string.connection_failed)) },
-            text = { Text(stringResource(R.string.connection_error_msg, "Server", uiState.error!!)) },
+            text = { Text(stringResource(R.string.connection_error_msg, uiState.currentServerIp.ifBlank { "Server" }, uiState.error!!)) },
             confirmButton = { 
-                TextButton(onClick = { showSettingsDialog = true; viewModel.refresh() }) { 
+                // This just opens settings. The actual refresh happens when SettingsDialog calls updateServerIp
+                TextButton(onClick = { showSettingsDialog = true }) { 
                     Text(stringResource(R.string.settings)) 
                 } 
             },
             dismissButton = { 
                 TextButton(onClick = { viewModel.refresh() }) { 
-                    Text(stringResource(R.string.dismiss)) 
+                    Text(stringResource(R.string.retry_connection))
                 } 
             }
         )

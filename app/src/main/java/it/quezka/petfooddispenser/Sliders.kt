@@ -10,47 +10,55 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 val sliderEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
 
 @Composable
-fun LabelRow(){
+fun LabelRow(labels: List<String>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(
-                bottom = 10.dp,
-                start = 10.dp,
-                end = 10.dp
-            ),
+            .padding(bottom = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     )
     {
-        Text("1", style = MaterialTheme.typography.labelMedium)
-        Text("2", style = MaterialTheme.typography.labelMedium)
-        Text("3", style = MaterialTheme.typography.labelMedium)
+        labels.forEach { label ->
+            Text(label, style = MaterialTheme.typography.labelMedium)
+        }
     }
 }
 
 @Composable
 fun DispenserSlider(
+    modifier: Modifier = Modifier,
     label: String,
     value: Float,
+    labels: List<String>,
     enabled: Boolean = true,
-    onValueChange: (Float) -> Unit,
-    modifier: Modifier = Modifier
+    onValueChange: (Float) -> Unit
 ) {
     val context = LocalContext.current
     val vibrator = remember {
-        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-        vibratorManager.defaultVibrator
+        // We use a try-catch here because the Vibrator service isn't always available in Previews
+        try {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } catch (e: Exception) {
+            null
+        }
     }
 
     Column(
@@ -59,26 +67,32 @@ fun DispenserSlider(
         Text(text = "$label ${if (!enabled) stringResource(R.string.physical_suffix) else ""}")
         Slider(
             enabled = enabled,
-            valueRange = 1f..3f,
+            // valueRange should match the number of labels
+            valueRange = 1f..labels.size.toFloat(),
             value = value,
-            steps = 1,
+            // steps is (number of discrete values - 2)
+            steps = labels.size - 2,
             onValueChange = {
                 if (it != value) {
-                    vibrator.vibrate(sliderEffect)
+                    vibrator?.vibrate(sliderEffect)
                     onValueChange(it)
                 }
             },
         )
-        LabelRow()
-        Text(text = stringResource(R.string.position_label, value.toInt()))
+        LabelRow(labels = labels)
+
+        // Show the actual label name instead of just the number
+        val displayValue = labels.getOrNull(value.toInt() - 1) ?: value.toInt().toString()
+        Text(text = stringResource(R.string.position_label, displayValue))
     }
 }
 
 @Composable
 fun SliderCR1(value: Float, enabled: Boolean = true, onValueChange: (Float) -> Unit) {
     DispenserSlider(
-        label = stringResource(R.string.selector_label, 1),
+        label = stringResource(R.string.selector1_label),
         value = value,
+        labels = listOf("1h", "2h", "3h", "4h", "5h"),
         enabled = enabled,
         onValueChange = onValueChange
     )
@@ -87,8 +101,9 @@ fun SliderCR1(value: Float, enabled: Boolean = true, onValueChange: (Float) -> U
 @Composable
 fun SliderCR2(value: Float, enabled: Boolean = true, onValueChange: (Float) -> Unit) {
     DispenserSlider(
-        label = stringResource(R.string.selector_label, 2),
+        label = stringResource(R.string.selector2_label),
         value = value,
+        labels = listOf("1h", "2h", "3h", "4h", "5h"),
         enabled = enabled,
         onValueChange = onValueChange
     )
@@ -97,9 +112,29 @@ fun SliderCR2(value: Float, enabled: Boolean = true, onValueChange: (Float) -> U
 @Composable
 fun SliderCR3(value: Float, enabled: Boolean = true, onValueChange: (Float) -> Unit) {
     DispenserSlider(
-        label = stringResource(R.string.selector_label, 3),
+        label = stringResource(R.string.selector3_label),
         value = value,
+        labels = listOf("XS", "S", "M", "L", "XL"),
         enabled = enabled,
         onValueChange = onValueChange
     )
+}
+
+@Preview(showBackground = true, name = "Pet Feeder Sliders")
+@Composable
+fun SlidersPreview() {
+    MaterialTheme {
+        Surface(modifier = Modifier.padding(16.dp)) {
+            Column {
+                // 'var ... by remember' creates local state for the preview
+                var val1 by remember { mutableFloatStateOf(1f) }
+                var val2 by remember { mutableFloatStateOf(3f) }
+                var val3 by remember { mutableFloatStateOf(2f) }
+
+                SliderCR1(value = val1, onValueChange = { val1 = it })
+                SliderCR2(value = val2, onValueChange = { val2 = it })
+                SliderCR3(value = val3, onValueChange = { val3 = it })
+            }
+        }
+    }
 }

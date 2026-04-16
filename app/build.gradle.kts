@@ -43,6 +43,9 @@ android {
 
 dependencies {
     implementation(libs.okhttp)
+    // SSE Support
+    implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

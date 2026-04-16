@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Food Dispenser</string>
+    <string name="welcome">Bevenuto!</string>
+    <string name="server_label">Server: %1$s</string>
+    <string name="not_connected">Non connesso.</string>
+    <string name="retry_connection">Riconnetti</string>
+    <string name="manual">Manuale</string>
+    <string name="remote">Remoto</string>
+    <string name="selector1_label">Ritardo Prima Erogazione</string>
+    <string name="physical_suffix">(Fisico)</string>
+    <string name="position_label">Posizione: %1$s</string>
+    <string name="debug_info">Info Debug:</string>
+    <string name="debug_mode">Mode: %1$s</string>
+    <string name="debug_remote">Rem: %1$.1f, %2$.1f, %3$.1f</string>
+    <string name="debug_physical">Physical: %1$.1f, %2$.1f, %3$.1f</string>
+    <string name="debug_json">JSON: %1$s</string>
+    <string name="refresh">Ricarica</string>
+    <string name="menu">Menu</string>
+    <string name="settings">Impostazioni</string>
+    <string name="about">Info</string>
+    <string name="connection_failed">Connessione Fallita</string>
+    <string name="connection_error_msg">Impossibile connettersi a $1$s. %2$s</string>
+    <string name="dismiss">Annulla</string>
+    <string name="server_ip_address">Indirizzo IP Server</string>
+    <string name="ip_placeholder">es. 192.168.1.1</string>
+    <string name="show_debug_info">Mostra Info Debug</string>
+    <string name="save">Salva</string>
+    <string name="cancel">Annulla</string>
+    <string name="setup_required">Necessita Impostazione</string>
+    <string name="setup_message">Configura l\'IP del Server tramite le Impostazioni per usare l\'App.</string>
+    <string name="open_settings">Apri Impostazioni</string>
+    <string name="selector2_label">Intervallo Erogazione</string>
+    <string name="selector3_label">Taglia del Cane</string>
+</resources>
