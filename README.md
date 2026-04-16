@@ -33,7 +33,8 @@ An Android application built with Jetpack Compose to remotely control and monito
 
 1. **Download** the app from "Releases" page.
 2. **Install and Run** on your device.
-3. **Configure IP**: On first launch, the app will prompt you for the Server IP Address. Enter the IP of your dispenser (e.g., `192.168.1.50`).
+3. **Connect** to the Arduino's WiFi Network (SSID: `PetFoodDispenserAlessandrini` , Password: `alessandrini2026`).
+4. **Configure IP**: On first launch, the app will prompt you for the Server IP Address. Enter the IP of your dispenser (e.g., `192.168.1.50`, default: `192.168.4.1`).
 
 ## 📡 API Integration
 
