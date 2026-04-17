@@ -54,7 +54,7 @@ class DispenserViewModel @Inject constructor(
                 if (!setupRequired) {
                     networkManager = networkManagerFactory(ip)
                     if (!_uiState.value.waitingForManualAction) {
-                        refresh() // This will also start SSE on success
+                        refresh()
                     }
                 } else {
                     disconnectSse()
@@ -102,12 +102,11 @@ class DispenserViewModel @Inject constructor(
                 updateStateFromJson(json)
             },
             onError = { error ->
-                // If SSE fails, we treat it as a connection error
                 _uiState.update { 
                     it.copy(
                         isConnected = false,
                         error = "Connection Lost: ${error.message ?: "Unknown Error"}",
-                        waitingForManualAction = true // Stop until user acts (Retry/Settings)
+                        waitingForManualAction = true
                     )
                 }
                 disconnectSse()
@@ -159,7 +158,7 @@ class DispenserViewModel @Inject constructor(
             
             manager.fetchStatus().onSuccess { json ->
                 updateStateFromJson(json)
-                ensureSseConnected() // Start listening after first successful poll
+                ensureSseConnected()
             }.onFailure { e ->
                 _uiState.update { 
                     it.copy(
@@ -177,9 +176,18 @@ class DispenserViewModel @Inject constructor(
         val manager = networkManager ?: return
         val modeStr = if (isRemote) "remote" else "local"
         
-        _uiState.update { it.copy(dispenserState = it.dispenserState.copy(mode = modeStr)) }
-
+        // Capture current physical positions if we are switching TO remote
+        val currentState = _uiState.value.dispenserState
+        
         viewModelScope.launch {
+            // 1. If switching to remote, sync remote values with physical ones first
+            if (isRemote) {
+                manager.sendCommand("set", "cr1_r", currentState.cr1.toInt().toString())
+                manager.sendCommand("set", "cr2_r", currentState.cr2.toInt().toString())
+                manager.sendCommand("set", "cr3_r", currentState.cr3.toInt().toString())
+            }
+
+            // 2. Then switch the mode
             manager.sendCommand("set", "mode", modeStr).onSuccess {
                 delay(300)
                 refresh()
