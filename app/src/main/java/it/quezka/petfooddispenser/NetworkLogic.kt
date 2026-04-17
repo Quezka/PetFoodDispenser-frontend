@@ -33,10 +33,16 @@ class NetworkManager(private val serverIP: String) {
 
     private val sseFactory = EventSources.createFactory(client)
 
+    // Helper to ensure IP has a port, defaults to :80
+    private fun formatUrl(path: String): String {
+        val baseUrl = if (serverIP.contains(":")) serverIP else "$serverIP:80"
+        return "http://$baseUrl/$path"
+    }
+
     suspend fun fetchStatus(): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
             val request = Request.Builder()
-                .url("http://$serverIP/get?t=${System.currentTimeMillis()}")
+                .url(formatUrl("get?t=${System.currentTimeMillis()}"))
                 .build()
             
             client.newCall(request).execute().use { response ->
@@ -48,7 +54,7 @@ class NetworkManager(private val serverIP: String) {
 
     fun startSse(onMessage: (String) -> Unit, onError: (Throwable) -> Unit): EventSource {
         val request = Request.Builder()
-            .url("http://$serverIP/events") // Your Arduino should serve events here
+            .url(formatUrl("events"))
             .header("Accept", "text/event-stream")
             .build()
 
@@ -72,7 +78,7 @@ class NetworkManager(private val serverIP: String) {
     suspend fun sendCommand(endpoint: String, variable: String, value: String): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
             val request = Request.Builder()
-                .url("http://$serverIP/$endpoint?$variable=$value")
+                .url(formatUrl("$endpoint?$variable=$value"))
                 .build()
 
             client.newCall(request).execute().use { response ->

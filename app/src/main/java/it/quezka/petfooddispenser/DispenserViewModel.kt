@@ -123,12 +123,6 @@ class DispenserViewModel @Inject constructor(
         try {
             var state = gson.fromJson(json, DispenserState::class.java)
             
-            if (state.mode == "remote") {
-                if (state.cr1Remote == 0f) { updateRemoteValue(1, 1f); state = state.copy(cr1Remote = 1f) }
-                if (state.cr2Remote == 0f) { updateRemoteValue(2, 1f); state = state.copy(cr2Remote = 1f) }
-                if (state.cr3Remote == 0f) { updateRemoteValue(3, 1f); state = state.copy(cr3Remote = 1f) }
-            }
-
             _uiState.update { 
                 it.copy(
                     dispenserState = state,
@@ -176,20 +170,31 @@ class DispenserViewModel @Inject constructor(
         val manager = networkManager ?: return
         val modeStr = if (isRemote) "remote" else "local"
         
-        // Capture current physical positions if we are switching TO remote
+        // 1. Capture current physical state
         val currentState = _uiState.value.dispenserState
         
+        // 2. OPTIMISTIC UPDATE: Update local UI immediately so it doesn't jump
+        _uiState.update { current ->
+            current.copy(
+                dispenserState = current.dispenserState.copy(
+                    mode = modeStr,
+                    cr1Remote = if (isRemote) currentState.cr1 else current.dispenserState.cr1Remote,
+                    cr2Remote = if (isRemote) currentState.cr2 else current.dispenserState.cr2Remote,
+                    cr3Remote = if (isRemote) currentState.cr3 else current.dispenserState.cr3Remote
+                )
+            )
+        }
+        
         viewModelScope.launch {
-            // 1. If switching to remote, sync remote values with physical ones first
             if (isRemote) {
+                // Sync values to Arduino registers
                 manager.sendCommand("set", "cr1_r", currentState.cr1.toInt().toString())
                 manager.sendCommand("set", "cr2_r", currentState.cr2.toInt().toString())
                 manager.sendCommand("set", "cr3_r", currentState.cr3.toInt().toString())
             }
-
-            // 2. Then switch the mode
+            // Switch mode on Arduino
             manager.sendCommand("set", "mode", modeStr).onSuccess {
-                delay(300)
+                delay(200)
                 refresh()
             }
         }
@@ -199,6 +204,7 @@ class DispenserViewModel @Inject constructor(
         val manager = networkManager ?: return
         val key = "cr${index}_r"
         
+        // Optimistic update for the specific slider
         _uiState.update { current ->
             val newState = when(index) {
                 1 -> current.dispenserState.copy(cr1Remote = value)

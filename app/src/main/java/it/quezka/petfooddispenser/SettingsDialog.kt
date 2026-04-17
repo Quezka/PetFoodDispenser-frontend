@@ -71,7 +71,8 @@ fun SettingsDialog(
                     label = { Text(stringResource(R.string.server_ip_address)) },
                     placeholder = { Text(stringResource(R.string.ip_placeholder)) },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    // Changed from Decimal to Uri to allow colons (:) for port input
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
                 )
                 
                 Spacer(Modifier.padding(8.dp))
