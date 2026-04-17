@@ -1,6 +1,7 @@
 package it.quezka.petfooddispenser
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -65,6 +66,7 @@ fun PetFoodDispenserTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
 
     MaterialTheme(
         colorScheme = colorScheme,

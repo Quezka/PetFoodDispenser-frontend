@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -123,6 +125,8 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
             onModeChange = { viewModel.setMode(it) },
             onValueChange = { index, value -> viewModel.updateRemoteValue(index, value) },
             onOpenSettings = { showSettingsDialog = true },
+            onToggleTestTime = { viewModel.toggleTestTime(it) },
+            onManualErogate = { viewModel.manualErogate() },
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -130,18 +134,23 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
     // Connection Error Dialog
     // We only show this if there's an error AND we are waiting for a manual action
     if (uiState.error != null && uiState.waitingForManualAction) {
+        val dialogButtonColors = ButtonDefaults.textButtonColors(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary,
+        )
+
         AlertDialog(
             onDismissRequest = { /* Don't auto-refresh on dismiss */ },
             title = { Text(stringResource(R.string.connection_failed)) },
             text = { Text(stringResource(R.string.connection_error_msg, uiState.currentServerIp.ifBlank { "Server" })) },
             confirmButton = { 
                 // This just opens settings. The actual refresh happens when SettingsDialog calls updateServerIp
-                TextButton(onClick = { showSettingsDialog = true }) { 
+                TextButton(onClick = { showSettingsDialog = true }, colors = dialogButtonColors) {
                     Text(stringResource(R.string.settings)) 
                 } 
             },
             dismissButton = { 
-                TextButton(onClick = { viewModel.refresh() }) { 
+                TextButton(onClick = { viewModel.refresh() }, colors = dialogButtonColors) {
                     Text(stringResource(R.string.retry_connection))
                 } 
             }
@@ -154,6 +163,8 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
             onServerIPChange = { viewModel.updateServerIp(it) },
             showDebug = uiState.showDebug,
             onDebugChange = { viewModel.setDebug(it) },
+            testMode = uiState.isTestModeEnabled,
+            onTestModeChange = { viewModel.updateTestMode(it) },
             onDismiss = { showSettingsDialog = false }
         )
     }

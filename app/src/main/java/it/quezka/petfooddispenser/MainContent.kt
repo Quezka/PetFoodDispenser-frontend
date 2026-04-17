@@ -1,6 +1,10 @@
 package it.quezka.petfooddispenser
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,6 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.Surface
 
 @Composable
 fun MainContent(
@@ -30,6 +37,8 @@ fun MainContent(
     onModeChange: (Boolean) -> Unit,
     onValueChange: (Int, Float) -> Unit,
     onOpenSettings: () -> Unit,
+    onToggleTestTime: (Boolean) -> Unit,
+    onManualErogate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (uiState.isSetupRequired) {
@@ -54,6 +63,11 @@ fun MainContent(
             }
         }
     } else {
+        val buttonColors = ButtonDefaults.textButtonColors(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary,
+        )
+
         Column(
             modifier = modifier.padding(18.dp).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -67,8 +81,8 @@ fun MainContent(
                 CircularProgressIndicator(modifier = Modifier.size(48.dp))
                 Spacer(Modifier.weight(1f))
             } else if (!uiState.isConnected && uiState.error != null) {
-                Text(stringResource(R.string.not_connected), color = MaterialTheme.colorScheme.error)
-                TextButton(onClick = onRefresh) { Text(stringResource(R.string.retry_connection)) }
+                Text(stringResource(R.string.not_connected), modifier = Modifier.padding(bottom = 10.dp), color = MaterialTheme.colorScheme.error)
+                TextButton(onClick = onRefresh, colors = buttonColors) { Text(stringResource(R.string.retry_connection)) }
             } else {
                 val state = uiState.dispenserState
                 val isRemote = state.mode == "remote"
@@ -105,6 +119,15 @@ fun MainContent(
                     }
                 )
 
+                if (uiState.isTestModeEnabled) {
+                    Spacer(Modifier.height(24.dp))
+                    TestControls(
+                        isTestTime = uiState.isTestTimeActive,
+                        onToggleTestTime = onToggleTestTime,
+                        onManualErogate = onManualErogate
+                    )
+                }
+
                 Spacer(Modifier.weight(1f))
 
                 // Debug Info
@@ -123,6 +146,144 @@ fun MainContent(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun TestControls(
+    isTestTime: Boolean,
+    onToggleTestTime: (Boolean) -> Unit,
+    onManualErogate: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.erogation_test),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        
+        Spacer(Modifier.height(8.dp))
+        
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.time_mode_label))
+            Spacer(Modifier.padding(horizontal = 8.dp))
+            Text(
+                text = if (isTestTime) stringResource(R.string.test_time) else stringResource(R.string.full_intervals),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(Modifier.padding(horizontal = 8.dp))
+            Switch(
+                checked = isTestTime,
+                onCheckedChange = onToggleTestTime,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                )
+            )
+        }
+        
+        Spacer(Modifier.height(12.dp))
+        
+        OutlinedButton(
+            onClick = onManualErogate,
+            modifier = Modifier.fillMaxWidth(0.7f)
+        ) {
+            Text(stringResource(R.string.manual_erogate))
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Main Content - Disconnected")
+@Composable
+fun MainContentDisconnectedPreview() {
+    MaterialTheme {
+        Surface {
+            MainContent(
+                uiState = UiState(
+                    isConnected = false,
+                    error = "Connection Failed"
+                ),
+                serverIP = "192.168.1.100",
+                onRefresh = {},
+                onModeChange = {},
+                onValueChange = { _, _ -> },
+                onOpenSettings = {},
+                onToggleTestTime = {},
+                onManualErogate = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Main Content - Connected (Local)")
+@Composable
+fun MainContentConnectedLocalPreview() {
+    MaterialTheme {
+        Surface {
+            MainContent(
+                uiState = UiState(
+                    isConnected = true,
+                    dispenserState = DispenserState(mode = "local", cr1 = 2f, cr2 = 3f, cr3 = 4f)
+                ),
+                serverIP = "192.168.1.100",
+                onRefresh = {},
+                onModeChange = {},
+                onValueChange = { _, _ -> },
+                onOpenSettings = {},
+                onToggleTestTime = {},
+                onManualErogate = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Main Content - Connected (Remote + Test Mode)")
+@Composable
+fun MainContentConnectedRemotePreview() {
+    MaterialTheme {
+        Surface {
+            MainContent(
+                uiState = UiState(
+                    isConnected = true,
+                    isTestModeEnabled = true,
+                    isTestTimeActive = true,
+                    dispenserState = DispenserState(mode = "remote", cr1Remote = 3f, cr2Remote = 1f, cr3Remote = 5f)
+                ),
+                serverIP = "192.168.1.100",
+                onRefresh = {},
+                onModeChange = {},
+                onValueChange = { _, _ -> },
+                onOpenSettings = {},
+                onToggleTestTime = {},
+                onManualErogate = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Setup Required")
+@Composable
+fun SetupRequiredPreview() {
+    MaterialTheme {
+        Surface {
+            MainContent(
+                uiState = UiState(isSetupRequired = true),
+                serverIP = "",
+                onRefresh = {},
+                onModeChange = {},
+                onValueChange = { _, _ -> },
+                onOpenSettings = {},
+                onToggleTestTime = {},
+                onManualErogate = {}
+            )
         }
     }
 }

@@ -22,7 +22,9 @@ data class UiState(
     val showDebug: Boolean = false,
     val isSetupRequired: Boolean = false,
     val currentServerIp: String = "",
-    val waitingForManualAction: Boolean = false
+    val waitingForManualAction: Boolean = false,
+    val isTestModeEnabled: Boolean = false,
+    val isTestTimeActive: Boolean = false
 )
 
 @HiltViewModel
@@ -59,6 +61,35 @@ class DispenserViewModel @Inject constructor(
                     networkManager = null
                 }
             }
+        }
+        viewModelScope.launch {
+            settingsRepository.testMode.collect { enabled ->
+                _uiState.update { it.copy(isTestModeEnabled = enabled) }
+            }
+        }
+    }
+
+    fun updateTestMode(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updateTestMode(enabled)
+        }
+    }
+
+    fun toggleTestTime(isTestTime: Boolean) {
+        val manager = networkManager ?: return
+        val value = if (isTestTime) "1" else "0"
+        
+        _uiState.update { it.copy(isTestTimeActive = isTestTime) }
+        
+        viewModelScope.launch {
+            manager.sendCommand("set", "test_time", value)
+        }
+    }
+
+    fun manualErogate() {
+        val manager = networkManager ?: return
+        viewModelScope.launch {
+            manager.sendCommand("set", "erogate", "1")
         }
     }
 

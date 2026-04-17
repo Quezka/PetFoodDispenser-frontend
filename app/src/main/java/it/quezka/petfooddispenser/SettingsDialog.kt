@@ -31,29 +31,34 @@ fun SettingsDialog(
     onServerIPChange: (String) -> Unit,
     showDebug: Boolean,
     onDebugChange: (Boolean) -> Unit,
+    testMode: Boolean,
+    onTestModeChange: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // Local state to hold values while editing
-    var localIP by remember { mutableStateOf(serverIP) }
-    var localShowDebug by remember { mutableStateOf(showDebug) }
-    
-    val colors = ButtonDefaults.textButtonColors(
+    val dialogButtonColors = ButtonDefaults.textButtonColors(
         containerColor = MaterialTheme.colorScheme.secondary,
         contentColor = MaterialTheme.colorScheme.onSecondary,
     )
+
+    // Local state to hold values while editing
+    var localIP by remember { mutableStateOf(serverIP) }
+    var localShowDebug by remember { mutableStateOf(showDebug) }
+    var localTestMode by remember { mutableStateOf(testMode) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = {
                 onServerIPChange(localIP)
                 onDebugChange(localShowDebug)
+                onTestModeChange(localTestMode)
                 onDismiss()
-            }, colors = colors) {
+            }, colors = dialogButtonColors) {
                 Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, colors = colors) {
+            TextButton(onClick = onDismiss, colors = dialogButtonColors) {
                 Text(stringResource(R.string.cancel))
             }
         },
@@ -78,6 +83,24 @@ fun SettingsDialog(
                     Switch(
                         checked = localShowDebug,
                         onCheckedChange = { localShowDebug = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                    )
+                }
+
+                Spacer(Modifier.padding(4.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.test_mode), modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = localTestMode,
+                        onCheckedChange = { localTestMode = it },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = MaterialTheme.colorScheme.primary,
                             checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,

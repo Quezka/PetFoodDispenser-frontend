@@ -19,15 +19,27 @@ class SettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val SERVER_IP = stringPreferencesKey("server_ip")
+    private val TEST_MODE = androidx.datastore.preferences.core.booleanPreferencesKey("test_mode")
 
     val serverIp: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[SERVER_IP] ?: ""
         }
 
+    val testMode: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[TEST_MODE] ?: false
+        }
+
     suspend fun updateServerIp(ip: String) {
         context.dataStore.edit { preferences ->
             preferences[SERVER_IP] = ip
+        }
+    }
+
+    suspend fun updateTestMode(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[TEST_MODE] = enabled
         }
     }
 }
