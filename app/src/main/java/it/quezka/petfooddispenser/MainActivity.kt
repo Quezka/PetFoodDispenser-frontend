@@ -1,10 +1,15 @@
 package it.quezka.petfooddispenser
 
+import android.Manifest
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -31,6 +35,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,12 +61,23 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showSettingsDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
+
+    // Notification Permission for Android 13+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val launcher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            // Handle result if needed
+        }
+        LaunchedEffect(Unit) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
     
     // Lifecycle Observer to refresh on Resume
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            // Only auto-refresh if we aren't waiting for a manual action (like fixing an IP)
             if (event == Lifecycle.Event.ON_RESUME && !uiState.waitingForManualAction) {
                 Log.d("MainScaffold", "App Resumed - Triggering refresh")
                 viewModel.refresh()
@@ -125,14 +141,11 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
             onModeChange = { viewModel.setMode(it) },
             onValueChange = { index, value -> viewModel.updateRemoteValue(index, value) },
             onOpenSettings = { showSettingsDialog = true },
-            onToggleTestTime = { viewModel.toggleTestTime(it) },
             onManualErogate = { viewModel.manualErogate() },
             modifier = Modifier.padding(innerPadding)
         )
     }
     
-    // Connection Error Dialog
-    // We only show this if there's an error AND we are waiting for a manual action
     if (uiState.error != null && uiState.waitingForManualAction) {
         val dialogButtonColors = ButtonDefaults.textButtonColors(
             containerColor = MaterialTheme.colorScheme.secondary,
@@ -140,11 +153,10 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
         )
 
         AlertDialog(
-            onDismissRequest = { /* Don't auto-refresh on dismiss */ },
+            onDismissRequest = { },
             title = { Text(stringResource(R.string.connection_failed)) },
             text = { Text(stringResource(R.string.connection_error_msg, uiState.currentServerIp.ifBlank { "Server" })) },
             confirmButton = { 
-                // This just opens settings. The actual refresh happens when SettingsDialog calls updateServerIp
                 TextButton(onClick = { showSettingsDialog = true }, colors = dialogButtonColors) {
                     Text(stringResource(R.string.settings)) 
                 } 
@@ -178,6 +190,15 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Start the Foreground Service
+        val serviceIntent = Intent(this, DispenserService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+
         enableEdgeToEdge()
         setContent { 
             PetFoodDispenserTheme { 

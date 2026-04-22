@@ -3,8 +3,6 @@ package it.quezka.petfooddispenser
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +35,6 @@ fun MainContent(
     onModeChange: (Boolean) -> Unit,
     onValueChange: (Int, Float) -> Unit,
     onOpenSettings: () -> Unit,
-    onToggleTestTime: (Boolean) -> Unit,
     onManualErogate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -122,8 +119,6 @@ fun MainContent(
                 if (uiState.isTestModeEnabled) {
                     Spacer(Modifier.height(24.dp))
                     TestControls(
-                        isTestTime = uiState.isTestTimeActive,
-                        onToggleTestTime = onToggleTestTime,
                         onManualErogate = onManualErogate
                     )
                 }
@@ -152,8 +147,6 @@ fun MainContent(
 
 @Composable
 fun TestControls(
-    isTestTime: Boolean,
-    onToggleTestTime: (Boolean) -> Unit,
     onManualErogate: () -> Unit
 ) {
     Column(
@@ -165,30 +158,6 @@ fun TestControls(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
-        
-        Spacer(Modifier.height(8.dp))
-        
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.time_mode_label))
-            Spacer(Modifier.padding(horizontal = 8.dp))
-            Text(
-                text = if (isTestTime) stringResource(R.string.test_time) else stringResource(R.string.full_intervals),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(Modifier.padding(horizontal = 8.dp))
-            Switch(
-                checked = isTestTime,
-                onCheckedChange = onToggleTestTime,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.primary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                )
-            )
-        }
         
         Spacer(Modifier.height(12.dp))
         
@@ -216,7 +185,6 @@ fun MainContentDisconnectedPreview() {
                 onModeChange = {},
                 onValueChange = { _, _ -> },
                 onOpenSettings = {},
-                onToggleTestTime = {},
                 onManualErogate = {}
             )
         }
@@ -238,7 +206,6 @@ fun MainContentConnectedLocalPreview() {
                 onModeChange = {},
                 onValueChange = { _, _ -> },
                 onOpenSettings = {},
-                onToggleTestTime = {},
                 onManualErogate = {}
             )
         }
@@ -254,7 +221,6 @@ fun MainContentConnectedRemotePreview() {
                 uiState = UiState(
                     isConnected = true,
                     isTestModeEnabled = true,
-                    isTestTimeActive = true,
                     dispenserState = DispenserState(mode = "remote", cr1Remote = 3f, cr2Remote = 1f, cr3Remote = 5f)
                 ),
                 serverIP = "192.168.1.100",
@@ -262,7 +228,6 @@ fun MainContentConnectedRemotePreview() {
                 onModeChange = {},
                 onValueChange = { _, _ -> },
                 onOpenSettings = {},
-                onToggleTestTime = {},
                 onManualErogate = {}
             )
         }
@@ -281,7 +246,6 @@ fun SetupRequiredPreview() {
                 onModeChange = {},
                 onValueChange = { _, _ -> },
                 onOpenSettings = {},
-                onToggleTestTime = {},
                 onManualErogate = {}
             )
         }
