@@ -21,7 +21,9 @@ data class UiState(
     val isSetupRequired: Boolean = false,
     val currentServerIp: String = "",
     val waitingForManualAction: Boolean = false,
-    val isTestModeEnabled: Boolean = false
+    val isTestModeEnabled: Boolean = false,
+    val prolungheSerbatoi: Int = 0,
+    val volumeMin: Int = 0
 )
 
 @HiltViewModel
@@ -63,6 +65,18 @@ class DispenserViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            settingsRepository.prolungheSerbatoi.collect { count ->
+                _uiState.update { it.copy(prolungheSerbatoi = count) }
+            }
+        }
+
+        viewModelScope.launch {
+            settingsRepository.volumeMin.collect { volume ->
+                _uiState.update { it.copy(volumeMin = volume) }
+            }
+        }
+
+        viewModelScope.launch {
             stateManager.state.collect { state ->
                 _uiState.update { it.copy(dispenserState = state) }
             }
@@ -79,8 +93,24 @@ class DispenserViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.updateTestMode(enabled)
             val manager = networkManager ?: return@launch
-            val value = if (enabled) "1" else "0"
+            val value = if (enabled) "true" else "false"
             manager.sendCommand("set", "test", value)
+        }
+    }
+
+    fun updateProlungheSerbatoi(count: Int) {
+        viewModelScope.launch {
+            settingsRepository.updateProlungheSerbatoi(count)
+            val manager = networkManager ?: return@launch
+            manager.sendCommand("set", "prolunghe_serbatoi", count.toString())
+        }
+    }
+
+    fun updateVolumeMin(volume: Int) {
+        viewModelScope.launch {
+            settingsRepository.updateVolumeMin(volume)
+            val manager = networkManager ?: return@launch
+            manager.sendCommand("set", "volume_min", volume.toString())
         }
     }
 

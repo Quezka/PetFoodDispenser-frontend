@@ -25,10 +25,18 @@
     <string name="setup_required">Необходима Настройка</string>
     <string name="setup_message">Для начала укажите IP адрес сервера в настройках приложения.</string>
     <string name="open_settings">Открыть Настройки</string>
+    <string name="test_time">Тест</string>
     <string name="selector2_label">Интервал Подачи</string>
     <string name="selector3_label">Размер Собаки</string>
     <string name="close_button">Закрыть</string>
     <string name="app_desc">Приложение, созданное при помощи JetPack Compose-фрэймворка, для управления раздатчиком еды для питомцев на основе Arduino через REST API.</string>
     <string name="app_dev">Создано Quezka</string>
-    <string name="app_credits">для I.I.S. \\\"E. Alessandrini\\\" - Монтесильвано</string>
+    <string name="app_credits">для I.I.S. \"E. Alessandrini\" - Монтесильвано</string>
+    <string name="test_mode">Режим Тестирования</string>
+    <string name="erogation_test">Проверка Подачи</string>
+    <string name="manual_erogate">Подача</string>
+    <string name="time_mode_label">Интервал Времени</string>
+    <string name="full_intervals">Полный</string>
+    <string name="prolunghe_label">Удлинения Бака:</string>
+    <string name="volume_min_label">Минимальный объём (мл):</string>
 </resources>

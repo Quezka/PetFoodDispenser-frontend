@@ -66,9 +66,7 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         val launcher = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            // Handle result if needed
-        }
+        ) { _ -> }
         LaunchedEffect(Unit) {
             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -177,6 +175,10 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
             onDebugChange = { viewModel.setDebug(it) },
             testMode = uiState.isTestModeEnabled,
             onTestModeChange = { viewModel.updateTestMode(it) },
+            prolungheSerbatoi = uiState.prolungheSerbatoi,
+            onProlungheSerbatoiChange = { viewModel.updateProlungheSerbatoi(it) },
+            volumeMin = uiState.volumeMin,
+            onVolumeMinChange = { viewModel.updateVolumeMin(it) },
             onDismiss = { showSettingsDialog = false }
         )
     }

@@ -116,7 +116,8 @@ fun MainContent(
                     }
                 )
 
-                if (uiState.isTestModeEnabled) {
+                // Show Test Controls if server says testMode is active OR if local preference is set
+                if (state.testMode || uiState.isTestModeEnabled) {
                     Spacer(Modifier.height(24.dp))
                     TestControls(
                         onManualErogate = onManualErogate
@@ -133,6 +134,7 @@ fun MainContent(
                     ) {
                         Text(stringResource(R.string.debug_info), style = MaterialTheme.typography.labelLarge, color = Color.Gray)
                         Text(stringResource(R.string.debug_mode, state.mode), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                        Text(stringResource(R.string.debug_test_mode, state.testMode), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                         Text(stringResource(R.string.debug_remote, state.cr1Remote, state.cr2Remote, state.cr3Remote), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                         Text(stringResource(R.string.debug_physical, state.cr1, state.cr2, state.cr3), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                         uiState.lastRawJson?.let {
@@ -221,7 +223,7 @@ fun MainContentConnectedRemotePreview() {
                 uiState = UiState(
                     isConnected = true,
                     isTestModeEnabled = true,
-                    dispenserState = DispenserState(mode = "remote", cr1Remote = 3f, cr2Remote = 1f, cr3Remote = 5f)
+                    dispenserState = DispenserState(mode = "remote", cr1Remote = 3f, cr2Remote = 1f, cr3Remote = 5f, testMode = true)
                 ),
                 serverIP = "192.168.1.100",
                 onRefresh = {},

@@ -19,7 +19,7 @@ data class DispenserState(
     @SerializedName("cr2_r") val cr2Remote: Float = 1f,
     @SerializedName("cr3_r") val cr3Remote: Float = 1f,
     @SerializedName("mode") val mode: String = "local",
-    @SerializedName("test_t") val testTime: Int = 0
+    @SerializedName("test") val testMode: Boolean = false,
 )
 
 fun interface NetworkManagerFactory {

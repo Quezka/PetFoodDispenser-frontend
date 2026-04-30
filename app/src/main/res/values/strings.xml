@@ -10,6 +10,7 @@
     <string name="position_label">Position: %1$s</string>
     <string name="debug_info">Debug Info:</string>
     <string name="debug_mode" translatable="false">Mode: %1$s</string>
+    <string name="debug_test_mode" translatable="false">Server Test Mode: %1$b</string>
     <string name="debug_remote" translatable="false">Rem: %1$.1f, %2$.1f, %3$.1f</string>
     <string name="debug_physical" translatable="false">Physical: %1$.1f, %2$.1f, %3$.1f</string>
     <string name="debug_json" translatable="false">JSON: %1$s</string>
@@ -38,7 +39,9 @@
     <string name="selector3_label">Dog Size</string>
     <string name="close_button">Close</string>
     <string name="app_desc">A Jetpack Compose application to control an Arduino-powered pet food dispenser via REST API.</string>
-    <string name="app_version" translatable="false">v1.1.1</string>
+    <string name="app_version" translatable="false">v1.1.6</string>
     <string name="app_dev">Developed by Quezka</string>
-    <string name="app_credits">for I.I.S. \\\"E. Alessandrini\\\" - Montesilvano</string>
+    <string name="app_credits">for I.I.S. \"E. Alessandrini\" - Montesilvano</string>
+    <string name="prolunghe_label">Tank Extensions:</string>
+    <string name="volume_min_label">Minimum Volume (ml):</string>
 </resources>

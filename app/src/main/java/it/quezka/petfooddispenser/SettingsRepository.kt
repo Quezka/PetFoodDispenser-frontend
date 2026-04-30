@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,6 +21,8 @@ class SettingsRepository @Inject constructor(
 ) {
     private val SERVER_IP = stringPreferencesKey("server_ip")
     private val TEST_MODE = androidx.datastore.preferences.core.booleanPreferencesKey("test_mode")
+    private val PROLUNGHE_SERBATOI = intPreferencesKey("prolunghe_serbatoi")
+    private val VOLUME_MIN = intPreferencesKey("volume_min")
 
     val serverIp: Flow<String> = context.dataStore.data
         .map { preferences ->
@@ -31,6 +34,16 @@ class SettingsRepository @Inject constructor(
             preferences[TEST_MODE] ?: false
         }
 
+    val prolungheSerbatoi: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[PROLUNGHE_SERBATOI] ?: 0
+        }
+
+    val volumeMin: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[VOLUME_MIN] ?: 0
+        }
+
     suspend fun updateServerIp(ip: String) {
         context.dataStore.edit { preferences ->
             preferences[SERVER_IP] = ip
@@ -40,6 +53,18 @@ class SettingsRepository @Inject constructor(
     suspend fun updateTestMode(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[TEST_MODE] = enabled
+        }
+    }
+
+    suspend fun updateProlungheSerbatoi(count: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PROLUNGHE_SERBATOI] = count
+        }
+    }
+
+    suspend fun updateVolumeMin(volume: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[VOLUME_MIN] = volume
         }
     }
 }
