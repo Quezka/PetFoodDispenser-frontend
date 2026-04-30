@@ -162,6 +162,8 @@ class DispenserViewModel @Inject constructor(
         val modeStr = if (isRemote) "remote" else "local"
         val currentState = _uiState.value.dispenserState
         
+        if (modeStr == currentState.mode) return
+
         _uiState.update { current ->
             current.copy(
                 dispenserState = current.dispenserState.copy(
@@ -175,9 +177,16 @@ class DispenserViewModel @Inject constructor(
         
         viewModelScope.launch {
             if (isRemote) {
-                manager.sendCommand("set", "cr1_r", currentState.cr1.toInt().toString())
-                manager.sendCommand("set", "cr2_r", currentState.cr2.toInt().toString())
-                manager.sendCommand("set", "cr3_r", currentState.cr3.toInt().toString())
+                // Only send sync commands if values differ to avoid redundant network calls
+                if (currentState.cr1.toInt() != currentState.cr1Remote.toInt()) {
+                    manager.sendCommand("set", "cr1_r", currentState.cr1.toInt().toString())
+                }
+                if (currentState.cr2.toInt() != currentState.cr2Remote.toInt()) {
+                    manager.sendCommand("set", "cr2_r", currentState.cr2.toInt().toString())
+                }
+                if (currentState.cr3.toInt() != currentState.cr3Remote.toInt()) {
+                    manager.sendCommand("set", "cr3_r", currentState.cr3.toInt().toString())
+                }
             }
             manager.sendCommand("set", "mode", modeStr).onSuccess {
                 delay(300)
@@ -189,7 +198,16 @@ class DispenserViewModel @Inject constructor(
     fun updateRemoteValue(index: Int, value: Float) {
         val manager = networkManager ?: return
         val key = "cr${index}_r"
+        val intValue = value.toInt()
         
+        val currentState = _uiState.value.dispenserState
+        val previousIntValue = when(index) {
+            1 -> currentState.cr1Remote.toInt()
+            2 -> currentState.cr2Remote.toInt()
+            3 -> currentState.cr3Remote.toInt()
+            else -> -1
+        }
+
         _uiState.update { current ->
             val newState = when(index) {
                 1 -> current.dispenserState.copy(cr1Remote = value)
@@ -200,8 +218,11 @@ class DispenserViewModel @Inject constructor(
             current.copy(dispenserState = newState)
         }
 
-        viewModelScope.launch {
-            manager.sendCommand("set", key, value.toInt().toString())
+        // Only send the command if the integer value (selector position) has actually changed
+        if (intValue != previousIntValue) {
+            viewModelScope.launch {
+                manager.sendCommand("set", key, intValue.toString())
+            }
         }
     }
 

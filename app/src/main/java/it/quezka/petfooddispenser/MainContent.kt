@@ -97,7 +97,7 @@ fun MainContent(
                 Text(
                     stringResource(R.string.welcome), 
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primaryContainer // Darker version of primary color
                 )
                 Text(
                     stringResource(R.string.server_label, serverIP), 

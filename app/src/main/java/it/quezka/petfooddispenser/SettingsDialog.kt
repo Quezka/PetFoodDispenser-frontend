@@ -17,6 +17,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,7 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.Composable
 
 
 @Composable
@@ -56,17 +56,39 @@ fun SettingsDialog(
     var localProlunghe by remember { mutableStateOf(prolungheSerbatoio) }
     var localVolumeMin by remember { mutableStateOf(volumeMin.toString()) }
 
+    // Stricter Validation
+    val isIPValid = remember(localIP) {
+        if (localIP.isBlank()) return@remember true
+        
+        val host = localIP.substringBefore(':')
+        
+        // Regex for IPv4: ensures 4 octets 0-255
+        val ipRegex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$".toRegex()
+        
+        // Regex for Hostname: allows dots but requires the last label to contain at least one letter
+        // This prevents partial IPs like "192.168.0" from matching as a hostname.
+        val hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([a-zA-Z][a-zA-Z0-9\\-]*[a-zA-Z0-9]|[a-zA-Z])$".toRegex()
+
+        ipRegex.matches(host) || hostnameRegex.matches(host)
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = {
-                onServerIPChange(localIP)
-                onDebugChange(localShowDebug)
-                onTestModeChange(localTestMode)
-                onProlungheSerbatoioChange(localProlunghe)
-                onVolumeMinChange(localVolumeMin.toIntOrNull() ?: volumeMin)
-                onDismiss()
-            }, colors = dialogButtonColors) {
+            TextButton(
+                onClick = {
+                    if (isIPValid) {
+                        onServerIPChange(localIP)
+                        onDebugChange(localShowDebug)
+                        onTestModeChange(localTestMode)
+                        onProlungheSerbatoioChange(localProlunghe)
+                        onVolumeMinChange(localVolumeMin.toIntOrNull() ?: volumeMin)
+                        onDismiss()
+                    }
+                }, 
+                colors = dialogButtonColors,
+                enabled = isIPValid && localIP.isNotBlank()
+            ) {
                 Text(stringResource(R.string.save))
             }
         },
@@ -75,7 +97,7 @@ fun SettingsDialog(
                 Text(stringResource(R.string.cancel))
             }
         },
-        title = { Text(stringResource(R.string.settings)) },
+        title = { Text(stringResource(R.string.settings), color = MaterialTheme.colorScheme.primary) },
         text = {
             Column {
                 OutlinedTextField(
@@ -84,7 +106,14 @@ fun SettingsDialog(
                     label = { Text(stringResource(R.string.server_ip_address)) },
                     placeholder = { Text(stringResource(R.string.ip_placeholder)) },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
+                    isError = !isIPValid,
+                    supportingText = {
+                        if (!isIPValid) {
+                            Text(text = "Invalid IP or Hostname", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    modifier = Modifier.fillMaxWidth()
                 )
                 
                 Spacer(Modifier.padding(8.dp))
@@ -137,7 +166,7 @@ fun SettingsDialog(
                 Text(
                     text = stringResource(R.string.prolunghe_label),
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 val radioOptions = listOf(0, 1, 2, 3)
