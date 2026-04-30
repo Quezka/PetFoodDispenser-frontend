@@ -39,4 +39,6 @@
     <string name="full_intervals">Pieno</string>
     <string name="prolunghe_label">Prolunghe Serbatoio:</string>
     <string name="volume_min_label">Volume minimo (ml):</string>
+    <string name="dispenser_type_label">Tipo del Dispenser:</string>
+    <string name="food_label">Cibo</string>
 </resources>
