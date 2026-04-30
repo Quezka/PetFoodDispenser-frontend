@@ -3,6 +3,7 @@ package it.quezka.petfooddispenser
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -20,9 +21,10 @@ class SettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val SERVER_IP = stringPreferencesKey("server_ip")
-    private val TEST_MODE = androidx.datastore.preferences.core.booleanPreferencesKey("test_mode")
+    private val TEST_MODE = booleanPreferencesKey("test_mode")
     private val PROLUNGHE_SERBATOIO = intPreferencesKey("prolunghe_serbatoio")
     private val VOLUME_MIN = intPreferencesKey("volume_min")
+    private val TIPO_DISPENSER = booleanPreferencesKey("tipo_dispenser")
 
     val serverIp: Flow<String> = context.dataStore.data
         .map { preferences ->
@@ -42,6 +44,11 @@ class SettingsRepository @Inject constructor(
     val volumeMin: Flow<Int> = context.dataStore.data
         .map { preferences ->
             preferences[VOLUME_MIN] ?: 0
+        }
+
+    val tipoDispenser: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[TIPO_DISPENSER] ?: true // Default to Food (true)
         }
 
     suspend fun updateServerIp(ip: String) {
@@ -65,6 +72,12 @@ class SettingsRepository @Inject constructor(
     suspend fun updateVolumeMin(volume: Int) {
         context.dataStore.edit { preferences ->
             preferences[VOLUME_MIN] = volume
+        }
+    }
+
+    suspend fun updateTipoDispenser(isFood: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[TIPO_DISPENSER] = isFood
         }
     }
 }

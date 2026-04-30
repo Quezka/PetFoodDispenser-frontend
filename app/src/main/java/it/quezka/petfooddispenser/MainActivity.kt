@@ -179,6 +179,8 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
             onProlungheSerbatoioChange = { viewModel.updateProlungheSerbatoio(it) },
             volumeMin = uiState.volumeMin,
             onVolumeMinChange = { viewModel.updateVolumeMin(it) },
+            isFoodDispenser = uiState.isFoodDispenser,
+            onTipoDispenserChange = { viewModel.updateTipoDispenser(it) },
             onDismiss = { showSettingsDialog = false }
         )
     }

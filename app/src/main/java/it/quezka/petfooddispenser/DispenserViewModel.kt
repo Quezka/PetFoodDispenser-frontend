@@ -3,6 +3,7 @@ package it.quezka.petfooddispenser
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +24,8 @@ data class UiState(
     val waitingForManualAction: Boolean = false,
     val isTestModeEnabled: Boolean = false,
     val prolungheSerbatoio: Int = 0,
-    val volumeMin: Int = 0
+    val volumeMin: Int = 0,
+    val isFoodDispenser: Boolean = true
 )
 
 @HiltViewModel
@@ -77,6 +79,12 @@ class DispenserViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            settingsRepository.tipoDispenser.collect { isFood ->
+                _uiState.update { it.copy(isFoodDispenser = isFood) }
+            }
+        }
+
+        viewModelScope.launch {
             stateManager.state.collect { state ->
                 _uiState.update { it.copy(dispenserState = state) }
             }
@@ -111,6 +119,14 @@ class DispenserViewModel @Inject constructor(
             settingsRepository.updateVolumeMin(volume)
             val manager = networkManager ?: return@launch
             manager.sendCommand("set", "volume_min", volume.toString())
+        }
+    }
+
+    fun updateTipoDispenser(isFood: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updateTipoDispenser(isFood)
+            val manager = networkManager ?: return@launch
+            manager.sendCommand("set", "tipo_dispenser", isFood.toString())
         }
     }
 
@@ -195,18 +211,19 @@ class DispenserViewModel @Inject constructor(
         }
     }
 
+    private var debounceJobs = mutableMapOf<Int, Job>()
     fun updateRemoteValue(index: Int, value: Float) {
         val manager = networkManager ?: return
         val key = "cr${index}_r"
         val intValue = value.toInt()
         
-        val currentState = _uiState.value.dispenserState
-        val previousIntValue = when(index) {
+        /* val currentState = _uiState.value.dispenserState*/
+        /*val previousIntValue = when(index) {
             1 -> currentState.cr1Remote.toInt()
             2 -> currentState.cr2Remote.toInt()
             3 -> currentState.cr3Remote.toInt()
             else -> -1
-        }
+        } */
 
         _uiState.update { current ->
             val newState = when(index) {
@@ -218,11 +235,10 @@ class DispenserViewModel @Inject constructor(
             current.copy(dispenserState = newState)
         }
 
-        // Only send the command if the integer value (selector position) has actually changed
-        if (intValue != previousIntValue) {
-            viewModelScope.launch {
-                manager.sendCommand("set", key, intValue.toString())
-            }
+        debounceJobs[index]?.cancel()
+        debounceJobs[index] = viewModelScope.launch {
+            delay(150) // Small delay to catch the end of a drag
+            manager.sendCommand("set", key, intValue.toString())
         }
     }
 

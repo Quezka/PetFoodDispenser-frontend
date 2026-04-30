@@ -42,6 +42,8 @@ fun SettingsDialog(
     onProlungheSerbatoioChange: (Int) -> Unit,
     volumeMin: Int,
     onVolumeMinChange: (Int) -> Unit,
+    isFoodDispenser: Boolean,
+    onTipoDispenserChange: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     val dialogButtonColors = ButtonDefaults.textButtonColors(
@@ -55,6 +57,7 @@ fun SettingsDialog(
     var localTestMode by remember { mutableStateOf(testMode) }
     var localProlunghe by remember { mutableStateOf(prolungheSerbatoio) }
     var localVolumeMin by remember { mutableStateOf(volumeMin.toString()) }
+    var localIsFood by remember { mutableStateOf(isFoodDispenser) }
 
     // Stricter Validation
     val isIPValid = remember(localIP) {
@@ -66,7 +69,6 @@ fun SettingsDialog(
         val ipRegex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$".toRegex()
         
         // Regex for Hostname: allows dots but requires the last label to contain at least one letter
-        // This prevents partial IPs like "192.168.0" from matching as a hostname.
         val hostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([a-zA-Z][a-zA-Z0-9\\-]*[a-zA-Z0-9]|[a-zA-Z])$".toRegex()
 
         ipRegex.matches(host) || hostnameRegex.matches(host)
@@ -83,6 +85,7 @@ fun SettingsDialog(
                         onTestModeChange(localTestMode)
                         onProlungheSerbatoioChange(localProlunghe)
                         onVolumeMinChange(localVolumeMin.toIntOrNull() ?: volumeMin)
+                        onTipoDispenserChange(localIsFood)
                         onDismiss()
                     }
                 }, 
@@ -162,6 +165,48 @@ fun SettingsDialog(
                 )
 
                 Spacer(Modifier.padding(12.dp))
+
+                Text(
+                    text = stringResource(R.string.dispenser_type_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .selectable(
+                                selected = localIsFood,
+                                onClick = { localIsFood = true },
+                                role = Role.RadioButton
+                            )
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = localIsFood, onClick = null)
+                        Text(text = stringResource(R.string.food_label), modifier = Modifier.padding(start = 8.dp))
+                    }
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .selectable(
+                                selected = !localIsFood,
+                                onClick = { localIsFood = false },
+                                role = Role.RadioButton
+                            )
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = !localIsFood, onClick = null)
+                        Text(text = stringResource(R.string.h2o_label), modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+
+                Spacer(Modifier.padding(8.dp))
 
                 Text(
                     text = stringResource(R.string.prolunghe_label),

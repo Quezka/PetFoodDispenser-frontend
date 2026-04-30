@@ -44,4 +44,7 @@
     <string name="app_credits">for I.I.S. \"E. Alessandrini\" - Montesilvano</string>
     <string name="prolunghe_label">Tank Extensions:</string>
     <string name="volume_min_label">Minimum Volume (ml):</string>
+    <string name="dispenser_type_label">Dispenser Type:</string>
+    <string name="food_label">Food</string>
+    <string name="h2o_label" translatable="false">H2O</string>
 </resources>
