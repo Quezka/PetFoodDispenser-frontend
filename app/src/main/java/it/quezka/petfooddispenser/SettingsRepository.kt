@@ -21,7 +21,7 @@ class SettingsRepository @Inject constructor(
 ) {
     private val SERVER_IP = stringPreferencesKey("server_ip")
     private val TEST_MODE = androidx.datastore.preferences.core.booleanPreferencesKey("test_mode")
-    private val PROLUNGHE_SERBATOI = intPreferencesKey("prolunghe_serbatoi")
+    private val PROLUNGHE_SERBATOIO = intPreferencesKey("prolunghe_serbatoio")
     private val VOLUME_MIN = intPreferencesKey("volume_min")
 
     val serverIp: Flow<String> = context.dataStore.data
@@ -34,9 +34,9 @@ class SettingsRepository @Inject constructor(
             preferences[TEST_MODE] ?: false
         }
 
-    val prolungheSerbatoi: Flow<Int> = context.dataStore.data
+    val prolungheSerbatoio: Flow<Int> = context.dataStore.data
         .map { preferences ->
-            preferences[PROLUNGHE_SERBATOI] ?: 0
+            preferences[PROLUNGHE_SERBATOIO] ?: 0
         }
 
     val volumeMin: Flow<Int> = context.dataStore.data
@@ -56,9 +56,9 @@ class SettingsRepository @Inject constructor(
         }
     }
 
-    suspend fun updateProlungheSerbatoi(count: Int) {
+    suspend fun updateProlungheSerbatoio(count: Int) {
         context.dataStore.edit { preferences ->
-            preferences[PROLUNGHE_SERBATOI] = count
+            preferences[PROLUNGHE_SERBATOIO] = count
         }
     }
 

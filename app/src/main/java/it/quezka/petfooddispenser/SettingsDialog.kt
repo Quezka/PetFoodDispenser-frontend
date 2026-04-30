@@ -17,7 +17,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.Composable
 
 
 @Composable
@@ -38,8 +38,8 @@ fun SettingsDialog(
     onDebugChange: (Boolean) -> Unit,
     testMode: Boolean,
     onTestModeChange: (Boolean) -> Unit,
-    prolungheSerbatoi: Int,
-    onProlungheSerbatoiChange: (Int) -> Unit,
+    prolungheSerbatoio: Int,
+    onProlungheSerbatoioChange: (Int) -> Unit,
     volumeMin: Int,
     onVolumeMinChange: (Int) -> Unit,
     onDismiss: () -> Unit
@@ -53,7 +53,7 @@ fun SettingsDialog(
     var localIP by remember { mutableStateOf(serverIP) }
     var localShowDebug by remember { mutableStateOf(showDebug) }
     var localTestMode by remember { mutableStateOf(testMode) }
-    var localProlunghe by remember { mutableStateOf(prolungheSerbatoi) }
+    var localProlunghe by remember { mutableStateOf(prolungheSerbatoio) }
     var localVolumeMin by remember { mutableStateOf(volumeMin.toString()) }
 
     AlertDialog(
@@ -63,7 +63,7 @@ fun SettingsDialog(
                 onServerIPChange(localIP)
                 onDebugChange(localShowDebug)
                 onTestModeChange(localTestMode)
-                onProlungheSerbatoiChange(localProlunghe)
+                onProlungheSerbatoioChange(localProlunghe)
                 onVolumeMinChange(localVolumeMin.toIntOrNull() ?: volumeMin)
                 onDismiss()
             }, colors = dialogButtonColors) {

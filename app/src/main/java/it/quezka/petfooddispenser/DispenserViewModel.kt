@@ -22,7 +22,7 @@ data class UiState(
     val currentServerIp: String = "",
     val waitingForManualAction: Boolean = false,
     val isTestModeEnabled: Boolean = false,
-    val prolungheSerbatoi: Int = 0,
+    val prolungheSerbatoio: Int = 0,
     val volumeMin: Int = 0
 )
 
@@ -65,8 +65,8 @@ class DispenserViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            settingsRepository.prolungheSerbatoi.collect { count ->
-                _uiState.update { it.copy(prolungheSerbatoi = count) }
+            settingsRepository.prolungheSerbatoio.collect { count ->
+                _uiState.update { it.copy(prolungheSerbatoio = count) }
             }
         }
 
@@ -98,11 +98,11 @@ class DispenserViewModel @Inject constructor(
         }
     }
 
-    fun updateProlungheSerbatoi(count: Int) {
+    fun updateProlungheSerbatoio(count: Int) {
         viewModelScope.launch {
-            settingsRepository.updateProlungheSerbatoi(count)
+            settingsRepository.updateProlungheSerbatoio(count)
             val manager = networkManager ?: return@launch
-            manager.sendCommand("set", "prolunghe_serbatoi", count.toString())
+            manager.sendCommand("set", "prolunghe_serbatoio", count.toString())
         }
     }
 

@@ -26,7 +26,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.Surface
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
     uiState: UiState,
@@ -38,6 +44,8 @@ fun MainContent(
     onManualErogate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
+
     if (uiState.isSetupRequired) {
         Column(
             modifier = modifier.padding(24.dp).fillMaxSize(),
@@ -46,99 +54,135 @@ fun MainContent(
         ) {
             Text(
                 text = stringResource(R.string.setup_required),
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.setup_message),
                 style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.height(32.dp))
-            Button(onClick = onOpenSettings) {
+            Button(
+                onClick = { 
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onOpenSettings() 
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
                 Text(stringResource(R.string.open_settings))
             }
         }
     } else {
-        val buttonColors = ButtonDefaults.textButtonColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary,
-        )
-
-        Column(
-            modifier = modifier.padding(18.dp).fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+        val pullToRefreshState = rememberPullToRefreshState()
+        
+        PullToRefreshBox(
+            isRefreshing = uiState.isProbing,
+            onRefresh = { 
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onRefresh() 
+            },
+            state = pullToRefreshState,
+            modifier = modifier.fillMaxSize()
         ) {
-            Text(stringResource(R.string.welcome), style = MaterialTheme.typography.headlineMedium)
-            Text(stringResource(R.string.server_label, serverIP), style = MaterialTheme.typography.bodyLarge)
-            Spacer(Modifier.padding(bottom = 20.dp))
-
-            if (uiState.isProbing && !uiState.isConnected) {
-                Spacer(Modifier.weight(1f))
-                CircularProgressIndicator(modifier = Modifier.size(48.dp))
-                Spacer(Modifier.weight(1f))
-            } else if (!uiState.isConnected && uiState.error != null) {
-                Text(stringResource(R.string.not_connected), modifier = Modifier.padding(bottom = 10.dp), color = MaterialTheme.colorScheme.error)
-                TextButton(onClick = onRefresh, colors = buttonColors) { Text(stringResource(R.string.retry_connection)) }
-            } else {
-                val state = uiState.dispenserState
-                val isRemote = state.mode == "remote"
-                val currentModeIndex = if (isRemote) 1 else 0
-
-                ModeSelector(
-                    selectedIndex = currentModeIndex,
-                    onSelectionChange = { index ->
-                        onModeChange(index == 1)
-                    }
+            Column(
+                modifier = Modifier.padding(18.dp).fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    stringResource(R.string.welcome), 
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-
+                Text(
+                    stringResource(R.string.server_label, serverIP), 
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(Modifier.padding(bottom = 20.dp))
 
-                SliderCR1(
-                    value = if (isRemote) state.cr1Remote else state.cr1,
-                    enabled = isRemote,
-                    onValueChange = { newValue ->
-                        onValueChange(1, newValue)
-                    }
-                )
-                SliderCR2(
-                    value = if (isRemote) state.cr2Remote else state.cr2,
-                    enabled = isRemote,
-                    onValueChange = { newValue ->
-                        onValueChange(2, newValue)
-                    }
-                )
-                SliderCR3(
-                    value = if (isRemote) state.cr3Remote else state.cr3,
-                    enabled = isRemote,
-                    onValueChange = { newValue ->
-                        onValueChange(3, newValue)
-                    }
-                )
-
-                // Show Test Controls if server says testMode is active OR if local preference is set
-                if (state.testMode || uiState.isTestModeEnabled) {
-                    Spacer(Modifier.height(24.dp))
-                    TestControls(
-                        onManualErogate = onManualErogate
+                if (!uiState.isConnected && uiState.error != null) {
+                    Text(
+                        stringResource(R.string.not_connected), 
+                        modifier = Modifier.padding(bottom = 10.dp), 
+                        color = MaterialTheme.colorScheme.error
                     )
-                }
+                    TextButton(
+                        onClick = onRefresh, 
+                        colors = ButtonDefaults.textButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
+                        )
+                    ) { 
+                        Text(stringResource(R.string.retry_connection)) 
+                    }
+                } else {
+                    val state = uiState.dispenserState
+                    val isRemote = state.mode == "remote"
+                    val currentModeIndex = if (isRemote) 1 else 0
 
-                Spacer(Modifier.weight(1f))
+                    ModeSelector(
+                        selectedIndex = currentModeIndex,
+                        onSelectionChange = { index ->
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onModeChange(index == 1)
+                        }
+                    )
 
-                // Debug Info
-                if (uiState.showDebug) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Text(stringResource(R.string.debug_info), style = MaterialTheme.typography.labelLarge, color = Color.Gray)
-                        Text(stringResource(R.string.debug_mode, state.mode), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                        Text(stringResource(R.string.debug_test_mode, state.testMode), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                        Text(stringResource(R.string.debug_remote, state.cr1Remote, state.cr2Remote, state.cr3Remote), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                        Text(stringResource(R.string.debug_physical, state.cr1, state.cr2, state.cr3), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                        uiState.lastRawJson?.let {
-                            Text(stringResource(R.string.debug_json, it), style = MaterialTheme.typography.labelSmall, color = Color.Gray, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.padding(bottom = 20.dp))
+
+                    SliderCR1(
+                        value = if (isRemote) state.cr1Remote else state.cr1,
+                        enabled = isRemote,
+                        onValueChange = { newValue ->
+                            onValueChange(1, newValue)
+                        }
+                    )
+                    SliderCR2(
+                        value = if (isRemote) state.cr2Remote else state.cr2,
+                        enabled = isRemote,
+                        onValueChange = { newValue ->
+                            onValueChange(2, newValue)
+                        }
+                    )
+                    SliderCR3(
+                        value = if (isRemote) state.cr3Remote else state.cr3,
+                        enabled = isRemote,
+                        onValueChange = { newValue ->
+                            onValueChange(3, newValue)
+                        }
+                    )
+
+                    if (state.testMode || uiState.isTestModeEnabled) {
+                        Spacer(Modifier.height(24.dp))
+                        TestControls(
+                            onManualErogate = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onManualErogate()
+                            }
+                        )
+                    }
+
+                    Spacer(Modifier.weight(1f))
+
+                    if (uiState.showDebug) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(stringResource(R.string.debug_info), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.debug_mode, state.mode), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.debug_test_mode, state.testMode), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.debug_remote, state.cr1Remote, state.cr2Remote, state.cr3Remote), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.debug_physical, state.cr1, state.cr2, state.cr3), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                            uiState.lastRawJson?.let {
+                                Text(stringResource(R.string.debug_json, it), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            }
                         }
                     }
                 }
@@ -165,7 +209,10 @@ fun TestControls(
         
         OutlinedButton(
             onClick = onManualErogate,
-            modifier = Modifier.fillMaxWidth(0.7f)
+            modifier = Modifier.fillMaxWidth(0.7f),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary
+            )
         ) {
             Text(stringResource(R.string.manual_erogate))
         }
@@ -175,7 +222,7 @@ fun TestControls(
 @Preview(showBackground = true, name = "Main Content - Disconnected")
 @Composable
 fun MainContentDisconnectedPreview() {
-    MaterialTheme {
+    PetFoodDispenserTheme {
         Surface {
             MainContent(
                 uiState = UiState(
@@ -196,7 +243,7 @@ fun MainContentDisconnectedPreview() {
 @Preview(showBackground = true, name = "Main Content - Connected (Local)")
 @Composable
 fun MainContentConnectedLocalPreview() {
-    MaterialTheme {
+    PetFoodDispenserTheme {
         Surface {
             MainContent(
                 uiState = UiState(
@@ -204,46 +251,6 @@ fun MainContentConnectedLocalPreview() {
                     dispenserState = DispenserState(mode = "local", cr1 = 2f, cr2 = 3f, cr3 = 4f)
                 ),
                 serverIP = "192.168.1.100",
-                onRefresh = {},
-                onModeChange = {},
-                onValueChange = { _, _ -> },
-                onOpenSettings = {},
-                onManualErogate = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Main Content - Connected (Remote + Test Mode)")
-@Composable
-fun MainContentConnectedRemotePreview() {
-    MaterialTheme {
-        Surface {
-            MainContent(
-                uiState = UiState(
-                    isConnected = true,
-                    isTestModeEnabled = true,
-                    dispenserState = DispenserState(mode = "remote", cr1Remote = 3f, cr2Remote = 1f, cr3Remote = 5f, testMode = true)
-                ),
-                serverIP = "192.168.1.100",
-                onRefresh = {},
-                onModeChange = {},
-                onValueChange = { _, _ -> },
-                onOpenSettings = {},
-                onManualErogate = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Setup Required")
-@Composable
-fun SetupRequiredPreview() {
-    MaterialTheme {
-        Surface {
-            MainContent(
-                uiState = UiState(isSetupRequired = true),
-                serverIP = "",
                 onRefresh = {},
                 onModeChange = {},
                 onValueChange = { _, _ -> },
