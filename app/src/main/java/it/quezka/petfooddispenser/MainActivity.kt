@@ -175,8 +175,8 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
             onDebugChange = { viewModel.setDebug(it) },
             testMode = uiState.isTestModeEnabled,
             onTestModeChange = { viewModel.updateTestMode(it) },
-            prolungheSerbatoi = uiState.prolungheSerbatoi,
-            onProlungheSerbatoiChange = { viewModel.updateProlungheSerbatoi(it) },
+            prolungheSerbatoio = uiState.prolungheSerbatoio,
+            onProlungheSerbatoioChange = { viewModel.updateProlungheSerbatoio(it) },
             volumeMin = uiState.volumeMin,
             onVolumeMinChange = { viewModel.updateVolumeMin(it) },
             onDismiss = { showSettingsDialog = false }

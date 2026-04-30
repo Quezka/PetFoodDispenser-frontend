@@ -8,16 +8,19 @@ plugins {
 
 android {
     namespace = "it.quezka.petfooddispenser"
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "it.quezka.petfooddispenser"
-        minSdk = 31
-        targetSdk = 36
-        versionCode = 3
-        versionName = "1.1.1"
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Unify version name for use in Compose/XML
+        resValue("string", "app_version_generated", "v${libs.versions.versionName.get()}")
     }
 
     buildTypes {
@@ -38,6 +41,7 @@ android {
     buildFeatures {
         viewBinding = true
         compose = true
+        buildConfig = true
     }
 }
 

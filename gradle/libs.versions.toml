@@ -20,6 +20,13 @@ hiltNavigationCompose = "1.2.0"
 datastore = "1.1.2"
 ksp = "2.1.0-1.0.29"
 
+# Project Versions
+compileSdk = "36"
+minSdk = "31"
+targetSdk = "36"
+versionCode = "7"
+versionName = "1.1.7"
+
 [libraries]
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
