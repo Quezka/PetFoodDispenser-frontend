@@ -50,7 +50,7 @@ fun AboutDialog(
                 )
                 Spacer(modifier = Modifier.padding(bottom = 16.dp))
                 Text(
-                    text = stringResource(R.string.app_version),
+                    text = stringResource(R.string.app_version_generated),
                     style = MaterialTheme.typography.labelSmall
                 )
                 Text(
