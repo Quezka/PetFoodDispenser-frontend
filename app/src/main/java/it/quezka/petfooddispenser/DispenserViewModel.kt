@@ -25,7 +25,8 @@ data class UiState(
     val isTestModeEnabled: Boolean = false,
     val prolungheSerbatoio: Int = 0,
     val volumeMin: Int = 0,
-    val isFoodDispenser: Boolean = true
+    val isFoodDispenser: Boolean = true,
+    val isErogating: Boolean = false
 )
 
 @HiltViewModel
@@ -132,8 +133,14 @@ class DispenserViewModel @Inject constructor(
 
     fun manualErogate() {
         val manager = networkManager ?: return
+        if (_uiState.value.isErogating) return
+
         viewModelScope.launch {
+            _uiState.update { it.copy(isErogating = true) }
             manager.sendCommand("set", "erogate", "1")
+            delay(1500) // Wait for erogation to complete
+            manager.sendCommand("set", "erogate", "0")
+            _uiState.update { it.copy(isErogating = false) }
         }
     }
 
@@ -217,14 +224,6 @@ class DispenserViewModel @Inject constructor(
         val key = "cr${index}_r"
         val intValue = value.toInt()
         
-        /* val currentState = _uiState.value.dispenserState*/
-        /*val previousIntValue = when(index) {
-            1 -> currentState.cr1Remote.toInt()
-            2 -> currentState.cr2Remote.toInt()
-            3 -> currentState.cr3Remote.toInt()
-            else -> -1
-        } */
-
         _uiState.update { current ->
             val newState = when(index) {
                 1 -> current.dispenserState.copy(cr1Remote = value)
