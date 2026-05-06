@@ -32,9 +32,7 @@
     <string name="test_mode">Test Mode</string>
     <string name="erogation_test">Erogation Test</string>
     <string name="manual_erogate">Erogate Now</string>
-    <string name="time_mode_label">Time Interval:</string>
     <string name="full_intervals">Full</string>
-    <string name="test_time">Test</string>
     <string name="selector2_label">Run Interval</string>
     <string name="selector3_label">Dog Size</string>
     <string name="close_button">Close</string>

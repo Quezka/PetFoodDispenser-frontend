@@ -138,9 +138,6 @@ class DispenserViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isErogating = true) }
             manager.sendCommand("set", "erogate", "1")
-            delay(1500) // Wait for erogation to complete
-            manager.sendCommand("set", "erogate", "0")
-            _uiState.update { it.copy(isErogating = false) }
         }
     }
 
