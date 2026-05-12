@@ -42,8 +42,6 @@
     <string name="dispenser_type_label">Tipo del Dispenser:</string>
     <string name="food_label">Cibo</string>
     <string name="error_invalid_ip_hostname">IP o Hostname Invalido</string>
-    <string name="error_invalid_ip_hostname">IP o Hostname Invalido</string>
-    <string name="error_invalid_ip_hostname">IP o Hostname Invalido</string>
     <string name="notification_connecting">Connessione in corso...</string>
     <string name="notification_connected">Connesso al Dispenser</string>
     <string name="notification_lost">Connessione Interrotta</string>

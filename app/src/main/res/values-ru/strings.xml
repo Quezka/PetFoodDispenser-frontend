@@ -42,7 +42,6 @@
     <string name="dispenser_type_label">Тип Диспенсера:</string>
     <string name="food_label">Еда</string>
     <string name="error_invalid_ip_hostname">Неверный IP или Hostname</string>
-    <string name="error_invalid_ip_hostname">Неверный IP или Hostname</string>
     <string name="notification_connecting">Подключение...</string>
     <string name="notification_connected">Подключено к Устройству</string>
     <string name="notification_lost">Подключение Сброшено</string>
