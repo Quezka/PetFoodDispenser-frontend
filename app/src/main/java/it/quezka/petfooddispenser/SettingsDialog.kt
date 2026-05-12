@@ -13,6 +13,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -47,8 +48,13 @@ fun SettingsDialog(
     onDismiss: () -> Unit
 ) {
     val dialogButtonColors = ButtonDefaults.textButtonColors(
-        containerColor = MaterialTheme.colorScheme.secondary,
-        contentColor = MaterialTheme.colorScheme.onSecondary,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+
+    val radioButtonColors = RadioButtonDefaults.colors(
+        selectedColor = MaterialTheme.colorScheme.primary,
+        unselectedColor = MaterialTheme.colorScheme.primaryContainer
     )
 
     // Local state to hold values while editing
@@ -192,7 +198,7 @@ fun SettingsDialog(
                             .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(selected = localIsFood, onClick = null)
+                        RadioButton(selected = localIsFood, onClick = null, colors = radioButtonColors)
                         Text(text = stringResource(R.string.food_label), modifier = Modifier.padding(start = 8.dp))
                     }
                     Row(
@@ -206,7 +212,7 @@ fun SettingsDialog(
                             .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(selected = !localIsFood, onClick = null)
+                        RadioButton(selected = !localIsFood, onClick = null, colors = radioButtonColors)
                         Text(text = stringResource(R.string.h2o_label), modifier = Modifier.padding(start = 8.dp))
                     }
                 }
@@ -234,7 +240,8 @@ fun SettingsDialog(
                     ) {
                         RadioButton(
                             selected = (count == localProlunghe),
-                            onClick = null
+                            onClick = null,
+                            colors = radioButtonColors
                         )
                         Text(
                             text = count.toString(),

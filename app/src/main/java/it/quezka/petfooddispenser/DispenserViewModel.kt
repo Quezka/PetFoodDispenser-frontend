@@ -218,7 +218,8 @@ class DispenserViewModel @Inject constructor(
         viewModelScope.launch {
             if (isRemote) {
                 // Only send sync commands if values differ to avoid redundant network calls
-                if (currentState.cr1.toInt() != currentState.cr1Remote.toInt()) {
+                // If CR1 is at minimum (1.0), we don't send cr1_r as per requirement
+                if (currentState.cr1.toInt() != currentState.cr1Remote.toInt() && currentState.cr1 > 1f) {
                     manager.sendCommand("set", "cr1_r", currentState.cr1.toInt().toString())
                 }
                 if (currentState.cr2.toInt() != currentState.cr2Remote.toInt()) {

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,11 +22,9 @@ fun AboutDialog(
 ) {
     val uriHandler = LocalUriHandler.current
     val schoolUrl = "https://italessandrini.edu.it/"
-    val colors = ButtonColors(
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        disabledContentColor = MaterialTheme.colorScheme.secondary,
-        disabledContainerColor = MaterialTheme.colorScheme.secondary
+    val colors = ButtonDefaults.textButtonColors(
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     )
 
     AlertDialog(
@@ -36,7 +34,12 @@ fun AboutDialog(
                 Text(stringResource(R.string.close_button))
             }
         },
-        title = { Text(stringResource(R.string.about)) },
+        title = { 
+            Text(
+                text = stringResource(R.string.about),
+                color = MaterialTheme.colorScheme.primary
+            ) 
+        },
         text = {
             Column {
                 Text(

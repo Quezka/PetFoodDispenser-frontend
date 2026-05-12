@@ -1,7 +1,6 @@
 package it.quezka.petfooddispenser
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -12,6 +11,8 @@ import androidx.compose.ui.unit.sp
 
 val DarkColorScheme = darkColorScheme(
     primary = PrimaryDark,
+    primaryContainer = PrimaryContainerDark,
+    onPrimaryContainer = OnPrimaryContainerDark,
     secondary = SecondaryDark,
     tertiary = TertiaryDark,
     background = BackgroundDark,
@@ -19,12 +20,13 @@ val DarkColorScheme = darkColorScheme(
     onPrimary = OnPrimaryDark,
     onBackground = OnBackgroundDark,
     onSurface = OnSurfaceDark,
-    onPrimaryContainer = OnPrimaryDark,
     onSecondary = OnSecondaryDark
 )
 
 val LightColorScheme = lightColorScheme(
     primary = PrimaryWhite,
+    primaryContainer = PrimaryContainerWhite,
+    onPrimaryContainer = OnPrimaryContainerWhite,
     secondary = SecondaryWhite,
     tertiary = TertiaryWhite,
     background = BackgroundWhite,
@@ -32,7 +34,6 @@ val LightColorScheme = lightColorScheme(
     onPrimary = OnPrimaryWhite,
     onBackground = OnBackgroundWhite,
     onSurface = OnSurfaceWhite,
-    onPrimaryContainer = OnPrimaryWhite,
     onSecondary = OnSecondaryWhite,
 )
 
@@ -70,7 +71,7 @@ fun PetFoodDispenserTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // You can define this similarly
+        typography = Typography,
         content = content
     )
 }
