@@ -32,9 +32,7 @@
     <string name="test_mode">Test Mode</string>
     <string name="erogation_test">Erogation Test</string>
     <string name="manual_erogate">Erogate Now</string>
-    <string name="time_mode_label">Time Interval:</string>
     <string name="full_intervals">Full</string>
-    <string name="test_time">Test</string>
     <string name="selector2_label">Run Interval</string>
     <string name="selector3_label">Dog Size</string>
     <string name="close_button">Close</string>
@@ -46,4 +44,14 @@
     <string name="dispenser_type_label">Dispenser Type:</string>
     <string name="food_label">Food</string>
     <string name="h2o_label" translatable="false">H2O</string>
+    <string name="test_time">Test</string>
+    <string name="time_mode_label">Time Interval</string>
+    <string name="error_invalid_ip_hostname">Invalid IP or Hostname</string>
+    <string name="notification_connecting">Connecting...</string>
+    <string name="notification_connected">Connected to Dispenser</string>
+    <string name="notification_lost">Connection Lost</string>
+    <string name="default_server_name">Server</string>
+    <string name="status_channel_name">Dispenser Status</string>
+    <string name="alert_channel_name">Dispenser Alerts</string>
+    <string name="unit_hours">%1$sh</string>
 </resources>

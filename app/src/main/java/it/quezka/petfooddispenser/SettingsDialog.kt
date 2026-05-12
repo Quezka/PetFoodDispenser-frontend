@@ -117,7 +117,7 @@ fun SettingsDialog(
                     isError = !isIPValid,
                     supportingText = {
                         if (!isIPValid) {
-                            Text(text = "Invalid IP or Hostname", color = MaterialTheme.colorScheme.error)
+                            Text(text = stringResource(R.string.error_invalid_ip_hostname), color = MaterialTheme.colorScheme.error)
                         }
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),

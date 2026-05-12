@@ -5,17 +5,17 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun ModeSelector (
     selectedIndex: Int,
     onSelectionChange: (Int) -> Unit
 ) {
-    val options = listOf("Manual", "Remote")
+    val options = listOf(
+        stringResource(R.string.manual),
+        stringResource(R.string.remote)
+    )
 
     SingleChoiceSegmentedButtonRow {
         options.forEachIndexed { index, label ->

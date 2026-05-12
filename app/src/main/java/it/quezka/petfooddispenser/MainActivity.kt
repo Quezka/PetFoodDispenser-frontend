@@ -153,7 +153,14 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
         AlertDialog(
             onDismissRequest = { },
             title = { Text(stringResource(R.string.connection_failed)) },
-            text = { Text(stringResource(R.string.connection_error_msg, uiState.currentServerIp.ifBlank { "Server" })) },
+            text = { 
+                Text(
+                    stringResource(
+                        R.string.connection_error_msg, 
+                        uiState.currentServerIp.ifBlank { stringResource(R.string.default_server_name) }
+                    )
+                ) 
+            },
             confirmButton = { 
                 TextButton(onClick = { showSettingsDialog = true }, colors = dialogButtonColors) {
                     Text(stringResource(R.string.settings)) 

@@ -52,7 +52,6 @@ fun DispenserSlider(
 ) {
     val context = LocalContext.current
     val vibrator = remember {
-        // We use a try-catch here because the Vibrator service isn't always available in Previews
         val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
         vibratorManager.defaultVibrator
     }
@@ -75,10 +74,8 @@ fun DispenserSlider(
         Text(text = label)
         Slider(
             enabled = enabled,
-            // valueRange should match the number of labels
             valueRange = 1f..labels.size.toFloat(),
             value = value,
-            // steps is (number of discrete values - 2)
             steps = labels.size - 2,
             onValueChange = {
                 if (it != value) {
@@ -90,7 +87,6 @@ fun DispenserSlider(
         )
         LabelRow(labels = labels)
 
-        // Show the actual label name instead of just the number
         val displayValue = labels.getOrNull(value.toInt() - 1) ?: value.toInt().toString()
         Text(text = stringResource(R.string.position_label, displayValue))
     }
@@ -98,10 +94,11 @@ fun DispenserSlider(
 
 @Composable
 fun SliderCR1(value: Float, enabled: Boolean = true, onValueChange: (Float) -> Unit) {
+    val hoursSuffix = stringResource(R.string.unit_hours, "")
     DispenserSlider(
         label = stringResource(R.string.selector1_label),
         value = value,
-        labels = listOf("0h", "1h", "2h", "3h", "4h"),
+        labels = listOf("0$hoursSuffix", "1$hoursSuffix", "2$hoursSuffix", "3$hoursSuffix", "4$hoursSuffix"),
         enabled = enabled,
         onValueChange = onValueChange
     )
@@ -109,10 +106,11 @@ fun SliderCR1(value: Float, enabled: Boolean = true, onValueChange: (Float) -> U
 
 @Composable
 fun SliderCR2(value: Float, enabled: Boolean = true, onValueChange: (Float) -> Unit) {
+    val hoursSuffix = stringResource(R.string.unit_hours, "")
     DispenserSlider(
         label = stringResource(R.string.selector2_label),
         value = value,
-        labels = listOf("3h", "4h", "6h", "8h", "12h"),
+        labels = listOf("3$hoursSuffix", "4$hoursSuffix", "6$hoursSuffix", "8$hoursSuffix", "12$hoursSuffix"),
         enabled = enabled,
         onValueChange = onValueChange
     )
@@ -135,7 +133,6 @@ fun SlidersPreview() {
     MaterialTheme {
         Surface(modifier = Modifier.padding(16.dp)) {
             Column {
-                // 'var ... by remember' creates local state for the preview
                 var val1 by remember { mutableFloatStateOf(1f) }
                 var val2 by remember { mutableFloatStateOf(3f) }
                 var val3 by remember { mutableFloatStateOf(2f) }
