@@ -50,8 +50,8 @@
     <string name="notification_connecting">Connecting...</string>
     <string name="notification_connected">Connected to Dispenser</string>
     <string name="notification_lost">Connection Lost</string>
-    <string name="default_server_name">Server</string>
+    <string name="default_server_name" translatable="false">Server</string>
     <string name="status_channel_name">Dispenser Status</string>
     <string name="alert_channel_name">Dispenser Alerts</string>
-    <string name="unit_hours">%1$sh</string>
+    <string name="unit_hours" translatable="false">%1$sh</string>
 </resources>

@@ -41,4 +41,11 @@
     <string name="volume_min_label">Минимальный объём (мл):</string>
     <string name="dispenser_type_label">Тип Диспенсера:</string>
     <string name="food_label">Еда</string>
+    <string name="error_invalid_ip_hostname">Неверный IP или Hostname</string>
+    <string name="error_invalid_ip_hostname">Неверный IP или Hostname</string>
+    <string name="notification_connecting">Подключение...</string>
+    <string name="notification_connected">Подключено к Устройству</string>
+    <string name="notification_lost">Подключение Сброшено</string>
+    <string name="status_channel_name">Статус Устройства</string>
+    <string name="alert_channel_name">Уведомления Устройства</string>
 </resources>
