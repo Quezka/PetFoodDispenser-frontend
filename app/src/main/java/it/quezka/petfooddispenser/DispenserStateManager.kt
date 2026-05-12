@@ -13,11 +13,18 @@ class DispenserStateManager @Inject constructor() {
     private val _isConnected = MutableStateFlow(false)
     val isConnected = _isConnected.asStateFlow()
 
+    private val _isErogating = MutableStateFlow(false)
+    val isErogating = _isErogating.asStateFlow()
+
     fun updateState(newState: DispenserState) {
         _state.value = newState
     }
 
     fun setConnected(connected: Boolean) {
         _isConnected.value = connected
+    }
+
+    fun setErogating(erogating: Boolean) {
+        _isErogating.value = erogating
     }
 }

@@ -71,15 +71,50 @@ class DispenserService : LifecycleService() {
         val manager = networkManager ?: return
 
         sseConnection = manager.startSse(
-            onMessage = { json ->
+            onOpen = {
+                stateManager.setConnected(true)
+                updateNotification("Connected to Dispenser", false)
+            },
+            onEvent = { type, data ->
                 isRetryInProgress = false
-                try {
-                    val state = gson.fromJson(json, DispenserState::class.java)
-                    stateManager.updateState(state)
-                    stateManager.setConnected(true)
-                    updateNotification("Connected to Dispenser", false)
-                } catch (e: Exception) {
-                    // Log error
+                when (type) {
+                    "erogation" -> {
+                        try {
+                            val event = gson.fromJson(data, ErogatingEvent::class.java)
+                            stateManager.setErogating(event.isErogating == 1)
+                        } catch (e: Exception) {
+                            // Log error
+                        }
+                    }
+                    "knobUpdate", null, "message" -> {
+                        try {
+                            // The server might send partial state (e.g. only cr1, cr2, cr3 for knobUpdate)
+                            // We merge it with the current state to avoid resetting other fields
+                            val currentState = stateManager.state.value
+                            val newState = gson.fromJson(data, DispenserState::class.java)
+                            
+                            // Merge logic: if a field is in knobUpdate, it overwrites. 
+                            // Since DispenserState fields are primitives/non-null with defaults, 
+                            // we need to be careful. However, for "knobUpdate", we specifically 
+                            // want to preserve current remote values and modes.
+                            
+                            val mergedState = if (type == "knobUpdate") {
+                                currentState.copy(
+                                    cr1 = newState.cr1,
+                                    cr2 = newState.cr2,
+                                    cr3 = newState.cr3
+                                )
+                            } else {
+                                newState
+                            }
+                            
+                            stateManager.updateState(mergedState)
+                            stateManager.setConnected(true)
+                            updateNotification("Connected to Dispenser", false)
+                        } catch (e: Exception) {
+                            // Log error
+                        }
+                    }
                 }
             },
             onError = {

@@ -80,12 +80,17 @@ fun SettingsDialog(
             TextButton(
                 onClick = {
                     if (isIPValid) {
-                        onServerIPChange(localIP)
-                        onDebugChange(localShowDebug)
-                        onTestModeChange(localTestMode)
-                        onProlungheSerbatoioChange(localProlunghe)
-                        onVolumeMinChange(localVolumeMin.toIntOrNull() ?: volumeMin)
-                        onTipoDispenserChange(localIsFood)
+                        // Only trigger updates for values that have actually changed
+                        if (localIP != serverIP) onServerIPChange(localIP)
+                        if (localShowDebug != showDebug) onDebugChange(localShowDebug)
+                        if (localTestMode != testMode) onTestModeChange(localTestMode)
+                        if (localProlunghe != prolungheSerbatoio) onProlungheSerbatoioChange(localProlunghe)
+                        
+                        val newVolumeMin = localVolumeMin.toIntOrNull() ?: volumeMin
+                        if (newVolumeMin != volumeMin) onVolumeMinChange(newVolumeMin)
+                        
+                        if (localIsFood != isFoodDispenser) onTipoDispenserChange(localIsFood)
+
                         onDismiss()
                     }
                 }, 

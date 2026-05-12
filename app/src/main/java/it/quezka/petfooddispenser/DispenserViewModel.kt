@@ -55,6 +55,8 @@ class DispenserViewModel @Inject constructor(
                 
                 if (!setupRequired) {
                     networkManager = networkManagerFactory(ip)
+                    // Trigger a refresh immediately when IP is loaded to enable the UI
+                    refresh()
                 } else {
                     networkManager = null
                 }
@@ -96,18 +98,25 @@ class DispenserViewModel @Inject constructor(
                 _uiState.update { it.copy(isConnected = connected) }
             }
         }
+
+        viewModelScope.launch {
+            stateManager.isErogating.collect { erogating ->
+                _uiState.update { it.copy(isErogating = erogating) }
+            }
+        }
     }
 
     fun updateTestMode(enabled: Boolean) {
+        if (_uiState.value.isTestModeEnabled == enabled) return
         viewModelScope.launch {
             settingsRepository.updateTestMode(enabled)
             val manager = networkManager ?: return@launch
-            val value = if (enabled) "true" else "false"
-            manager.sendCommand("set", "test", value)
+            manager.sendCommand("set", "test", if (enabled) "1" else "0")
         }
     }
 
     fun updateProlungheSerbatoio(count: Int) {
+        if (_uiState.value.prolungheSerbatoio == count) return
         viewModelScope.launch {
             settingsRepository.updateProlungheSerbatoio(count)
             val manager = networkManager ?: return@launch
@@ -116,6 +125,7 @@ class DispenserViewModel @Inject constructor(
     }
 
     fun updateVolumeMin(volume: Int) {
+        if (_uiState.value.volumeMin == volume) return
         viewModelScope.launch {
             settingsRepository.updateVolumeMin(volume)
             val manager = networkManager ?: return@launch
@@ -124,27 +134,33 @@ class DispenserViewModel @Inject constructor(
     }
 
     fun updateTipoDispenser(isFood: Boolean) {
+        if (_uiState.value.isFoodDispenser == isFood) return
         viewModelScope.launch {
             settingsRepository.updateTipoDispenser(isFood)
             val manager = networkManager ?: return@launch
-            manager.sendCommand("set", "tipo_dispenser", isFood.toString())
+            manager.sendCommand("set", "tipo_dispenser", if (isFood) "1" else "0")
         }
     }
 
     fun manualErogate() {
         val manager = networkManager ?: return
-        if (_uiState.value.isErogating) return
+        if (_uiState.value.isErogating || !_uiState.value.isConnected) return
 
         viewModelScope.launch {
+            // Optimistically set to true for immediate feedback
             _uiState.update { it.copy(isErogating = true) }
-            manager.sendCommand("set", "erogate", "1")
-            delay(1500) // Wait for erogation to complete
-            manager.sendCommand("set", "erogate", "0")
-            _uiState.update { it.copy(isErogating = false) }
+            
+            manager.sendCommand("set", "erogate", "1").onFailure {
+                // If the command fails, reset the state
+                _uiState.update { it.copy(isErogating = false) }
+            }
+            // Note: We no longer send erogate=0 or use a delay here.
+            // The button state is now driven by the "erogation" SSE event from the server.
         }
     }
 
     fun updateServerIp(ip: String) {
+        if (_uiState.value.currentServerIp == ip) return
         viewModelScope.launch {
             _uiState.update { it.copy(waitingForManualAction = false) }
             settingsRepository.updateServerIp(ip)
@@ -176,6 +192,7 @@ class DispenserViewModel @Inject constructor(
                         waitingForManualAction = true 
                     ) 
                 }
+                stateManager.setConnected(false)
             }
         }
     }
@@ -224,6 +241,15 @@ class DispenserViewModel @Inject constructor(
         val key = "cr${index}_r"
         val intValue = value.toInt()
         
+        val currentState = _uiState.value.dispenserState
+        val previousValue = when(index) {
+            1 -> currentState.cr1Remote
+            2 -> currentState.cr2Remote
+            3 -> currentState.cr3Remote
+            else -> return
+        }
+
+        // Always update local UI state for visual smoothness during drag
         _uiState.update { current ->
             val newState = when(index) {
                 1 -> current.dispenserState.copy(cr1Remote = value)
@@ -233,6 +259,9 @@ class DispenserViewModel @Inject constructor(
             }
             current.copy(dispenserState = newState)
         }
+
+        // Only send to network if the integer value has changed
+        if (intValue == previousValue.toInt()) return
 
         debounceJobs[index]?.cancel()
         debounceJobs[index] = viewModelScope.launch {

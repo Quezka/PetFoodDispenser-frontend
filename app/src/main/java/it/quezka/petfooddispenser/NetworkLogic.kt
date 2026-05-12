@@ -22,6 +22,10 @@ data class DispenserState(
     @SerializedName("test") val testMode: Boolean = false,
 )
 
+data class ErogatingEvent(
+    @SerializedName("is_erogating") val isErogating: Int
+)
+
 fun interface NetworkManagerFactory {
     operator fun invoke(serverIP: String): NetworkManager
 }
@@ -53,15 +57,23 @@ class NetworkManager(private val serverIP: String) {
         }
     }
 
-    fun startSse(onMessage: (String) -> Unit, onError: (Throwable) -> Unit): EventSource {
+    fun startSse(
+        onOpen: () -> Unit = {},
+        onEvent: (type: String?, data: String) -> Unit, 
+        onError: (Throwable) -> Unit
+    ): EventSource {
         val request = Request.Builder()
             .url(formatUrl("events"))
             .header("Accept", "text/event-stream")
             .build()
 
         val listener = object : EventSourceListener() {
+            override fun onOpen(eventSource: EventSource, response: Response) {
+                onOpen()
+            }
+
             override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
-                onMessage(data)
+                onEvent(type, data)
             }
 
             override fun onFailure(eventSource: EventSource, t: Throwable?, response: Response?) {
