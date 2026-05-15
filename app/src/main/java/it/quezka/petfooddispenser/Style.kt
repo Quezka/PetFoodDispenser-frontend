@@ -11,30 +11,38 @@ import androidx.compose.ui.unit.sp
 
 val DarkColorScheme = darkColorScheme(
     primary = PrimaryDark,
+    onPrimary = OnPrimaryDark,
     primaryContainer = PrimaryContainerDark,
     onPrimaryContainer = OnPrimaryContainerDark,
     secondary = SecondaryDark,
+    onSecondary = OnSecondaryDark,
     tertiary = TertiaryDark,
+    onTertiary = OnTertiaryDark,
+    error = ErrorDark,
     background = BackgroundDark,
-    surface = SurfaceDark,
-    onPrimary = OnPrimaryDark,
     onBackground = OnBackgroundDark,
+    surface = SurfaceDark,
     onSurface = OnSurfaceDark,
-    onSecondary = OnSecondaryDark
+    outline = OutlineDark,
+    onSurfaceVariant = OnSurfaceVariantDark
 )
 
 val LightColorScheme = lightColorScheme(
     primary = PrimaryWhite,
+    onPrimary = OnPrimaryWhite,
     primaryContainer = PrimaryContainerWhite,
     onPrimaryContainer = OnPrimaryContainerWhite,
     secondary = SecondaryWhite,
-    tertiary = TertiaryWhite,
-    background = BackgroundWhite,
-    surface = SurfaceWhite,
-    onPrimary = OnPrimaryWhite,
-    onBackground = OnBackgroundWhite,
-    onSurface = OnSurfaceWhite,
     onSecondary = OnSecondaryWhite,
+    tertiary = TertiaryWhite,
+    onTertiary = OnTertiaryWhite,
+    error = ErrorWhite,
+    background = BackgroundWhite,
+    onBackground = OnBackgroundWhite,
+    surface = SurfaceWhite,
+    onSurface = OnSurfaceWhite,
+    outline = OutlineWhite,
+    onSurfaceVariant = OnSurfaceVariantWhite
 )
 
 val Typography = androidx.compose.material3.Typography(
@@ -67,7 +75,6 @@ fun PetFoodDispenserTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-
 
     MaterialTheme(
         colorScheme = colorScheme,

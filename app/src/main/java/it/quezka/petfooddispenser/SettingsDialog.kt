@@ -34,17 +34,12 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SettingsDialog(
     serverIP: String,
-    onServerIPChange: (String) -> Unit,
     showDebug: Boolean,
-    onDebugChange: (Boolean) -> Unit,
     testMode: Boolean,
-    onTestModeChange: (Boolean) -> Unit,
     prolungheSerbatoio: Int,
-    onProlungheSerbatoioChange: (Int) -> Unit,
     volumeMin: Int,
-    onVolumeMinChange: (Int) -> Unit,
     isFoodDispenser: Boolean,
-    onTipoDispenserChange: (Boolean) -> Unit,
+    onSave: (ip: String, testMode: Boolean, prolunghe: Int, volumeMin: Int, isFood: Boolean, showDebug: Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     val dialogButtonColors = ButtonDefaults.textButtonColors(
@@ -86,17 +81,15 @@ fun SettingsDialog(
             TextButton(
                 onClick = {
                     if (isIPValid) {
-                        // Only trigger updates for values that have actually changed
-                        if (localIP != serverIP) onServerIPChange(localIP)
-                        if (localShowDebug != showDebug) onDebugChange(localShowDebug)
-                        if (localTestMode != testMode) onTestModeChange(localTestMode)
-                        if (localProlunghe != prolungheSerbatoio) onProlungheSerbatoioChange(localProlunghe)
-                        
                         val newVolumeMin = localVolumeMin.toIntOrNull() ?: volumeMin
-                        if (newVolumeMin != volumeMin) onVolumeMinChange(newVolumeMin)
-                        
-                        if (localIsFood != isFoodDispenser) onTipoDispenserChange(localIsFood)
-
+                        onSave(
+                            localIP,
+                            localTestMode,
+                            localProlunghe,
+                            newVolumeMin,
+                            localIsFood,
+                            localShowDebug
+                        )
                         onDismiss()
                     }
                 }, 

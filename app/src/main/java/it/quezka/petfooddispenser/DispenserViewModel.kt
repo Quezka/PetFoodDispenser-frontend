@@ -55,7 +55,6 @@ class DispenserViewModel @Inject constructor(
                 
                 if (!setupRequired) {
                     networkManager = networkManagerFactory(ip)
-                    // Trigger a refresh immediately when IP is loaded to enable the UI
                     refresh()
                 } else {
                     networkManager = null
@@ -106,6 +105,55 @@ class DispenserViewModel @Inject constructor(
         }
     }
 
+    fun saveAllSettings(
+        ip: String,
+        testMode: Boolean,
+        prolunghe: Int,
+        volumeMin: Int,
+        isFood: Boolean,
+        showDebug: Boolean
+    ) {
+        viewModelScope.launch {
+            // 1. Salva localmente nel DataStore
+            settingsRepository.updateServerIp(ip)
+            settingsRepository.updateTestMode(testMode)
+            settingsRepository.updateProlungheSerbatoio(prolunghe)
+            settingsRepository.updateVolumeMin(volumeMin)
+            settingsRepository.updateTipoDispenser(isFood)
+            
+            _uiState.update { it.copy(showDebug = showDebug) }
+
+            // 2. Ottieni il manager corretto (se l'IP è cambiato, creane uno nuovo subito)
+            val manager = if (ip != _uiState.value.currentServerIp) {
+                networkManagerFactory(ip).also { networkManager = it }
+            } else {
+                networkManager
+            } ?: return@launch
+
+            val state = _uiState.value.dispenserState
+
+            // 3. Manda TUTTI i parametri uno dopo l'altro
+            val commands = listOf(
+                "test" to (if (testMode) "1" else "0"),
+                "prolunghe_serbatoio" to prolunghe.toString(),
+                "volume_min" to volumeMin.toString(),
+                "tipo_dispenser" to (if (isFood) "1" else "0"),
+                "mode" to state.mode,
+                "cr1_r" to state.cr1Remote.toInt().toString(),
+                "cr2_r" to state.cr2Remote.toInt().toString(),
+                "cr3_r" to state.cr3Remote.toInt().toString()
+            )
+
+            commands.forEach { (variable, value) ->
+                manager.sendCommand("set", variable, value)
+                delay(100) // Piccolo delay per stabilità hardware
+            }
+
+            delay(200)
+            refresh()
+        }
+    }
+
     fun updateTestMode(enabled: Boolean) {
         if (_uiState.value.isTestModeEnabled == enabled) return
         viewModelScope.launch {
@@ -147,15 +195,10 @@ class DispenserViewModel @Inject constructor(
         if (_uiState.value.isErogating || !_uiState.value.isConnected) return
 
         viewModelScope.launch {
-            // Optimistically set to true for immediate feedback
             _uiState.update { it.copy(isErogating = true) }
-            
             manager.sendCommand("set", "erogate", "1").onFailure {
-                // If the command fails, reset the state
                 _uiState.update { it.copy(isErogating = false) }
             }
-            // Note: We no longer send erogate=0 or use a delay here.
-            // The button state is now driven by the "erogation" SSE event from the server.
         }
     }
 
@@ -169,28 +212,19 @@ class DispenserViewModel @Inject constructor(
 
     fun refresh() {
         val manager = networkManager ?: return
-        
         viewModelScope.launch {
             _uiState.update { it.copy(isProbing = true, error = null, waitingForManualAction = false) }
-            
             manager.fetchStatus().onSuccess { json ->
                 try {
                     val gson = com.google.gson.Gson()
                     val state = gson.fromJson(json, DispenserState::class.java)
                     stateManager.updateState(state)
                     stateManager.setConnected(true)
-                } catch (e: Exception) {
-                    // Ignore parsing errors
-                }
+                } catch (e: Exception) {}
                 _uiState.update { it.copy(isProbing = false) }
             }.onFailure { e ->
                 _uiState.update { 
-                    it.copy(
-                        isConnected = false, 
-                        isProbing = false, 
-                        error = e.message,
-                        waitingForManualAction = true 
-                    ) 
+                    it.copy(isConnected = false, isProbing = false, error = e.message, waitingForManualAction = true) 
                 }
                 stateManager.setConnected(false)
             }
@@ -217,8 +251,6 @@ class DispenserViewModel @Inject constructor(
         
         viewModelScope.launch {
             if (isRemote) {
-                // Only send sync commands if values differ to avoid redundant network calls
-                // If CR1 is at minimum (1.0), we don't send cr1_r as per requirement
                 if (currentState.cr1.toInt() != currentState.cr1Remote.toInt() && currentState.cr1 > 1f) {
                     manager.sendCommand("set", "cr1_r", currentState.cr1.toInt().toString())
                 }
@@ -241,7 +273,6 @@ class DispenserViewModel @Inject constructor(
         val manager = networkManager ?: return
         val key = "cr${index}_r"
         val intValue = value.toInt()
-        
         val currentState = _uiState.value.dispenserState
         val previousValue = when(index) {
             1 -> currentState.cr1Remote
@@ -250,7 +281,6 @@ class DispenserViewModel @Inject constructor(
             else -> return
         }
 
-        // Always update local UI state for visual smoothness during drag
         _uiState.update { current ->
             val newState = when(index) {
                 1 -> current.dispenserState.copy(cr1Remote = value)
@@ -261,12 +291,11 @@ class DispenserViewModel @Inject constructor(
             current.copy(dispenserState = newState)
         }
 
-        // Only send to network if the integer value has changed
         if (intValue == previousValue.toInt()) return
 
         debounceJobs[index]?.cancel()
         debounceJobs[index] = viewModelScope.launch {
-            delay(150) // Small delay to catch the end of a drag
+            delay(150)
             manager.sendCommand("set", key, intValue.toString())
         }
     }
