@@ -177,17 +177,14 @@ fun MainScaffold(viewModel: DispenserViewModel = hiltViewModel()) {
     if (showSettingsDialog) {
         SettingsDialog(
             serverIP = uiState.currentServerIp,
-            onServerIPChange = { viewModel.updateServerIp(it) },
             showDebug = uiState.showDebug,
-            onDebugChange = { viewModel.setDebug(it) },
             testMode = uiState.isTestModeEnabled,
-            onTestModeChange = { viewModel.updateTestMode(it) },
             prolungheSerbatoio = uiState.prolungheSerbatoio,
-            onProlungheSerbatoioChange = { viewModel.updateProlungheSerbatoio(it) },
             volumeMin = uiState.volumeMin,
-            onVolumeMinChange = { viewModel.updateVolumeMin(it) },
             isFoodDispenser = uiState.isFoodDispenser,
-            onTipoDispenserChange = { viewModel.updateTipoDispenser(it) },
+            onSave = { ip, test, prolunghe, volume, isFood, debug ->
+                viewModel.saveAllSettings(ip, test, prolunghe, volume, isFood, debug)
+            },
             onDismiss = { showSettingsDialog = false }
         )
     }
