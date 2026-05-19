@@ -1,11 +1,14 @@
 package it.quezka.petfooddispenser
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -162,6 +166,41 @@ fun MainContent(
                             }
                         )
 
+                        Spacer(Modifier.height(16.dp))
+                        
+                        // Alarm Display Area
+                        val hasAlarms = state.alarms.isNotBlank()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = if (hasAlarms) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f) 
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = if (hasAlarms) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .padding(12.dp)
+                                .heightIn(min = 80.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.alarms_label),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (hasAlarms) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = state.alarms.ifBlank { stringResource(R.string.no_alarms) },
+                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                                color = if (hasAlarms) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
                         if (uiState.showDebug) {
                             Spacer(Modifier.height(24.dp))
                             Column(
@@ -245,7 +284,7 @@ fun MainContentConnectedLocalPreview() {
             MainContent(
                 uiState = UiState(
                     isConnected = true,
-                    dispenserState = DispenserState(mode = "local", cr1 = 2f, cr2 = 3f, cr3 = 4f)
+                    dispenserState = DispenserState(mode = "local", cr1 = 2f, cr2 = 3f, cr3 = 4f, alarms = "TANK_EMPTY")
                 ),
                 serverIP = "192.168.1.100",
                 onRefresh = {},

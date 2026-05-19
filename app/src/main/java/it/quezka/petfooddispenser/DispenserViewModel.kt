@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,7 +27,8 @@ data class UiState(
     val prolungheSerbatoio: Int = 0,
     val volumeMin: Int = 0,
     val isFoodDispenser: Boolean = true,
-    val isErogating: Boolean = false
+    val isErogating: Boolean = false,
+    val isSavingSettings: Boolean = false
 )
 
 @HiltViewModel
@@ -43,7 +45,9 @@ class DispenserViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            settingsRepository.serverIp.collect { ip ->
+            settingsRepository.serverIp
+                .distinctUntilChanged()
+                .collect { ip ->
                 val setupRequired = ip.isBlank()
                 _uiState.update { 
                     it.copy(
@@ -114,25 +118,25 @@ class DispenserViewModel @Inject constructor(
         showDebug: Boolean
     ) {
         viewModelScope.launch {
-            // 1. Salva localmente nel DataStore
-            settingsRepository.updateServerIp(ip)
-            settingsRepository.updateTestMode(testMode)
-            settingsRepository.updateProlungheSerbatoio(prolunghe)
-            settingsRepository.updateVolumeMin(volumeMin)
-            settingsRepository.updateTipoDispenser(isFood)
+            // Mostriamo la rotellina
+            _uiState.update { it.copy(isSavingSettings = true) }
+
+            val ipChanged = ip != _uiState.value.currentServerIp
             
+            settingsRepository.updateAllSettings(ip, testMode, prolunghe, volumeMin, isFood)
             _uiState.update { it.copy(showDebug = showDebug) }
 
-            // 2. Ottieni il manager corretto (se l'IP è cambiato, creane uno nuovo subito)
-            val manager = if (ip != _uiState.value.currentServerIp) {
-                networkManagerFactory(ip).also { networkManager = it }
-            } else {
-                networkManager
-            } ?: return@launch
+            if (ipChanged) {
+                delay(1500)
+            }
 
+            val manager = networkManager ?: run {
+                _uiState.update { it.copy(isSavingSettings = false) }
+                return@launch
+            }
+            
             val state = _uiState.value.dispenserState
 
-            // 3. Manda TUTTI i parametri uno dopo l'altro
             val commands = listOf(
                 "test" to (if (testMode) "1" else "0"),
                 "prolunghe_serbatoio" to prolunghe.toString(),
@@ -146,12 +150,43 @@ class DispenserViewModel @Inject constructor(
 
             commands.forEach { (variable, value) ->
                 manager.sendCommand("set", variable, value)
-                delay(100) // Piccolo delay per stabilità hardware
+                delay(400)
             }
 
-            delay(200)
-            refresh()
+            delay(500)
+            
+            // Eseguiamo il refresh e aspettiamo che finisca
+            refreshInternal().join()
+            
+            // Nascondiamo la rotellina solo dopo il refresh
+            _uiState.update { it.copy(isSavingSettings = false) }
         }
+    }
+
+    // Refactored refresh to be callable and awaitable
+    private fun refreshInternal(): Job {
+        val manager = networkManager ?: return viewModelScope.launch {}
+        return viewModelScope.launch {
+            _uiState.update { it.copy(isProbing = true, error = null, waitingForManualAction = false) }
+            manager.fetchStatus().onSuccess { json ->
+                try {
+                    val gson = com.google.gson.Gson()
+                    val state = gson.fromJson(json, DispenserState::class.java)
+                    stateManager.updateState(state)
+                    stateManager.setConnected(true)
+                } catch (e: Exception) {}
+                _uiState.update { it.copy(isProbing = false) }
+            }.onFailure { e ->
+                _uiState.update { 
+                    it.copy(isConnected = false, isProbing = false, error = e.message, waitingForManualAction = true) 
+                }
+                stateManager.setConnected(false)
+            }
+        }
+    }
+
+    fun refresh() {
+        refreshInternal()
     }
 
     fun updateTestMode(enabled: Boolean) {
@@ -207,27 +242,6 @@ class DispenserViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(waitingForManualAction = false) }
             settingsRepository.updateServerIp(ip)
-        }
-    }
-
-    fun refresh() {
-        val manager = networkManager ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isProbing = true, error = null, waitingForManualAction = false) }
-            manager.fetchStatus().onSuccess { json ->
-                try {
-                    val gson = com.google.gson.Gson()
-                    val state = gson.fromJson(json, DispenserState::class.java)
-                    stateManager.updateState(state)
-                    stateManager.setConnected(true)
-                } catch (e: Exception) {}
-                _uiState.update { it.copy(isProbing = false) }
-            }.onFailure { e ->
-                _uiState.update { 
-                    it.copy(isConnected = false, isProbing = false, error = e.message, waitingForManualAction = true) 
-                }
-                stateManager.setConnected(false)
-            }
         }
     }
 

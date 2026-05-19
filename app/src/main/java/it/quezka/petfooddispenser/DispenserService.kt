@@ -14,6 +14,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import okhttp3.sse.EventSource
 import javax.inject.Inject
@@ -53,16 +54,19 @@ class DispenserService : LifecycleService() {
         startForeground(NOTIFICATION_ID, createNotification(getString(R.string.notification_connecting), false))
 
         lifecycleScope.launch {
-            settingsRepository.serverIp.collect { ip ->
-                if (ip.isNotBlank()) {
-                    currentIp = ip
-                    networkManager = networkManagerFactory(ip)
-                    connectSse()
-                } else {
-                    currentIp = ""
-                    disconnectSse()
+            // Fondamentale: distinctUntilChanged() evita di ricollegarsi se l'IP è lo stesso
+            settingsRepository.serverIp
+                .distinctUntilChanged()
+                .collect { ip ->
+                    if (ip.isNotBlank()) {
+                        currentIp = ip
+                        networkManager = networkManagerFactory(ip)
+                        connectSse()
+                    } else {
+                        currentIp = ""
+                        disconnectSse()
+                    }
                 }
-            }
         }
     }
 
@@ -82,9 +86,7 @@ class DispenserService : LifecycleService() {
                         try {
                             val event = gson.fromJson(data, ErogatingEvent::class.java)
                             stateManager.setErogating(event.isErogating == 1)
-                        } catch (e: Exception) {
-                            // Log error
-                        }
+                        } catch (e: Exception) {}
                     }
                     "knobUpdate", null, "message" -> {
                         try {
@@ -104,9 +106,7 @@ class DispenserService : LifecycleService() {
                             stateManager.updateState(mergedState)
                             stateManager.setConnected(true)
                             updateNotification(getString(R.string.notification_connected), false)
-                        } catch (e: Exception) {
-                            // Log error
-                        }
+                        } catch (e: Exception) {}
                     }
                 }
             },
@@ -130,7 +130,7 @@ class DispenserService : LifecycleService() {
                 } else {
                     isRetryInProgress = false
                 }
-                retryDelay = (retryDelay * 2).coerceAtMost(60000L) // Exponential backoff up to 1 min
+                retryDelay = (retryDelay * 2).coerceAtMost(60000L)
             }
         }
     }
@@ -145,8 +145,6 @@ class DispenserService : LifecycleService() {
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            
-            // Channel for normal status
             val statusChannel = NotificationChannel(
                 CHANNEL_ID_STATUS,
                 getString(R.string.status_channel_name),
@@ -154,7 +152,6 @@ class DispenserService : LifecycleService() {
             )
             manager.createNotificationChannel(statusChannel)
 
-            // Channel for alerts
             val alertChannel = NotificationChannel(
                 CHANNEL_ID_ALERTS,
                 getString(R.string.alert_channel_name),
@@ -169,12 +166,8 @@ class DispenserService : LifecycleService() {
 
     private fun createNotification(content: String, isAlert: Boolean): Notification {
         val intent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_IMMUTABLE
-        )
-
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         val channelId = if (isAlert) CHANNEL_ID_ALERTS else CHANNEL_ID_STATUS
-
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(content)

@@ -25,6 +25,7 @@
     <string name="setup_required">Necessita Impostazione</string>
     <string name="setup_message">Configura l\'IP del Server tramite le Impostazioni per usare l\'App.</string>
     <string name="open_settings">Apri Impostazioni</string>
+    <string name="h2o_label">Acqua</string>
     <string name="test_time">Test</string>
     <string name="selector2_label">Intervallo Erogazione</string>
     <string name="selector3_label">Taglia del Cane</string>
@@ -47,4 +48,7 @@
     <string name="notification_lost">Connessione Interrotta</string>
     <string name="status_channel_name">Stato del Dispenser</string>
     <string name="alert_channel_name">Notifiche del Dispenser</string>
+    <string name="synchronisation">Sincronizzazione...</string>
+    <string name="alarms_label">Allarmi</string>
+    <string name="no_alarms">Nessun allarme presente</string>
 </resources>

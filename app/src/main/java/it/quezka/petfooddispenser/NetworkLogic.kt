@@ -20,6 +20,7 @@ data class DispenserState(
     @SerializedName("cr3_r") val cr3Remote: Float = 1f,
     @SerializedName("mode") val mode: String = "local",
     @SerializedName("test") val testMode: Boolean = false,
+    @SerializedName("alarms") val alarms: String = ""
 )
 
 data class ErogatingEvent(

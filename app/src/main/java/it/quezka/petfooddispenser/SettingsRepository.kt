@@ -51,6 +51,22 @@ class SettingsRepository @Inject constructor(
             preferences[TIPO_DISPENSER] ?: true // Default to Food (true)
         }
 
+    suspend fun updateAllSettings(
+        ip: String,
+        testMode: Boolean,
+        prolunghe: Int,
+        volumeMin: Int,
+        isFood: Boolean
+    ) {
+        context.dataStore.edit { preferences ->
+            preferences[SERVER_IP] = ip
+            preferences[TEST_MODE] = testMode
+            preferences[PROLUNGHE_SERBATOIO] = prolunghe
+            preferences[VOLUME_MIN] = volumeMin
+            preferences[TIPO_DISPENSER] = isFood
+        }
+    }
+
     suspend fun updateServerIp(ip: String) {
         context.dataStore.edit { preferences ->
             preferences[SERVER_IP] = ip
