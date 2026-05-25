@@ -51,4 +51,6 @@
     <string name="synchronisation">Синхронизация...</string>
     <string name="alarms_label">Оповещения</string>
     <string name="no_alarms">Нет активных оповещений</string>
+    <string name="alarm_low_food">Низкий Уровень!</string>
+    <string name="alarm_low_battery">Батарея Разряжена!</string>
 </resources>

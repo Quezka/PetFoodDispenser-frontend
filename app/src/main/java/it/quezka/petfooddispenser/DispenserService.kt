@@ -54,7 +54,6 @@ class DispenserService : LifecycleService() {
         startForeground(NOTIFICATION_ID, createNotification(getString(R.string.notification_connecting), false))
 
         lifecycleScope.launch {
-            // Fondamentale: distinctUntilChanged() evita di ricollegarsi se l'IP è lo stesso
             settingsRepository.serverIp
                 .distinctUntilChanged()
                 .collect { ip ->
@@ -86,6 +85,26 @@ class DispenserService : LifecycleService() {
                         try {
                             val event = gson.fromJson(data, ErogatingEvent::class.java)
                             stateManager.setErogating(event.isErogating == 1)
+                        } catch (e: Exception) {}
+                    }
+                    "allarmeLivello" -> {
+                        try {
+                            val event = gson.fromJson(data, LevelAlarmEvent::class.java)
+                            // Forza l'aggiornamento (sia 1 che 0) tramite metodo dedicato
+                            stateManager.updateLevelAlarm(event.allarmeLivello)
+                            if (event.allarmeLivello == 1) {
+                                updateNotification(getString(R.string.alarm_low_food), true)
+                            }
+                        } catch (e: Exception) {}
+                    }
+                    "allarmeBatteria" -> {
+                        try {
+                            val event = gson.fromJson(data, BatteryAlarmEvent::class.java)
+                            // Forza l'aggiornamento (sia 1 che 0) tramite metodo dedicato
+                            stateManager.updateBatteryAlarm(event.allarmeBatteria)
+                            if (event.allarmeBatteria == 1) {
+                                updateNotification(getString(R.string.alarm_low_battery), true)
+                            }
                         } catch (e: Exception) {}
                     }
                     "knobUpdate", null, "message" -> {

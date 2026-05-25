@@ -25,6 +25,7 @@ class SettingsRepository @Inject constructor(
     private val PROLUNGHE_SERBATOIO = intPreferencesKey("prolunghe_serbatoio")
     private val VOLUME_MIN = intPreferencesKey("volume_min")
     private val TIPO_DISPENSER = booleanPreferencesKey("tipo_dispenser")
+    private val SHOW_DEBUG = booleanPreferencesKey("show_debug")
 
     val serverIp: Flow<String> = context.dataStore.data
         .map { preferences ->
@@ -48,7 +49,12 @@ class SettingsRepository @Inject constructor(
 
     val tipoDispenser: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[TIPO_DISPENSER] ?: true // Default to Food (true)
+            preferences[TIPO_DISPENSER] ?: true
+        }
+
+    val showDebug: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[SHOW_DEBUG] ?: false
         }
 
     suspend fun updateAllSettings(
@@ -56,7 +62,8 @@ class SettingsRepository @Inject constructor(
         testMode: Boolean,
         prolunghe: Int,
         volumeMin: Int,
-        isFood: Boolean
+        isFood: Boolean,
+        showDebug: Boolean
     ) {
         context.dataStore.edit { preferences ->
             preferences[SERVER_IP] = ip
@@ -64,6 +71,7 @@ class SettingsRepository @Inject constructor(
             preferences[PROLUNGHE_SERBATOIO] = prolunghe
             preferences[VOLUME_MIN] = volumeMin
             preferences[TIPO_DISPENSER] = isFood
+            preferences[SHOW_DEBUG] = showDebug
         }
     }
 
@@ -94,6 +102,12 @@ class SettingsRepository @Inject constructor(
     suspend fun updateTipoDispenser(isFood: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[TIPO_DISPENSER] = isFood
+        }
+    }
+
+    suspend fun updateShowDebug(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[SHOW_DEBUG] = enabled
         }
     }
 }

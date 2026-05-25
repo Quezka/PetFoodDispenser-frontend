@@ -51,4 +51,6 @@
     <string name="synchronisation">Sincronizzazione...</string>
     <string name="alarms_label">Allarmi</string>
     <string name="no_alarms">Nessun allarme presente</string>
+    <string name="alarm_low_food">Livello Basso!</string>
+    <string name="alarm_low_battery">Batteria Scarica!</string>
 </resources>

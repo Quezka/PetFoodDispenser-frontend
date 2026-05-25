@@ -24,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -85,7 +86,7 @@ fun MainContent(
         val pullToRefreshState = rememberPullToRefreshState()
         
         Column(modifier = modifier.fillMaxSize()) {
-            // Scrollable Area
+            // Scrollable Content
             PullToRefreshBox(
                 isRefreshing = uiState.isProbing,
                 onRefresh = { 
@@ -147,58 +148,81 @@ fun MainContent(
                         SliderCR1(
                             value = if (isRemote) state.cr1Remote else state.cr1,
                             enabled = isRemote,
-                            onValueChange = { newValue ->
-                                onValueChange(1, newValue)
-                            }
+                            onValueChange = { newValue -> onValueChange(1, newValue) }
                         )
                         SliderCR2(
                             value = if (isRemote) state.cr2Remote else state.cr2,
                             enabled = isRemote,
-                            onValueChange = { newValue ->
-                                onValueChange(2, newValue)
-                            }
+                            onValueChange = { newValue -> onValueChange(2, newValue) }
                         )
                         SliderCR3(
                             value = if (isRemote) state.cr3Remote else state.cr3,
                             enabled = isRemote,
-                            onValueChange = { newValue ->
-                                onValueChange(3, newValue)
-                            }
+                            onValueChange = { newValue -> onValueChange(3, newValue) }
                         )
 
                         Spacer(Modifier.height(16.dp))
                         
-                        // Alarm Display Area
-                        val hasAlarms = state.alarms.isNotBlank()
+                        // Alarm Display Logic
+                        val lowFoodMsg = stringResource(R.string.alarm_low_food)
+                        val lowBatteryMsg = stringResource(R.string.alarm_low_battery)
+                        
+                        val activeAlarms = remember(state.alarmLevel, state.alarmBattery, state.alarms, lowFoodMsg, lowBatteryMsg) {
+                            val list = mutableListOf<String>()
+                            if (state.alarmLevel == 1) {
+                                val prefix = if (state.alarms.isNotBlank()) "${state.alarms} | " else ""
+                                list.add(prefix + lowFoodMsg)
+                            }
+                            if (state.alarmBattery == 1) {
+                                list.add(lowBatteryMsg)
+                            }
+                            if (list.isEmpty() && state.alarms.isNotBlank()) {
+                                list.add(state.alarms)
+                            }
+                            list
+                        }
+                        
+                        val hasAlarms = activeAlarms.isNotEmpty()
+                        
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    color = if (hasAlarms) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f) 
-                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                    shape = MaterialTheme.shapes.medium
-                                )
-                                .border(
-                                    width = 1.dp,
-                                    color = if (hasAlarms) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
-                                    shape = MaterialTheme.shapes.medium
-                                )
-                                .padding(12.dp)
-                                .heightIn(min = 80.dp)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
                                 text = stringResource(R.string.alarms_label),
                                 style = MaterialTheme.typography.labelLarge,
-                                color = if (hasAlarms) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (hasAlarms) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 4.dp)
                             )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = state.alarms.ifBlank { stringResource(R.string.no_alarms) },
-                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                                color = if (hasAlarms) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 80.dp),
+                                shape = MaterialTheme.shapes.medium,
+                                color = if (hasAlarms) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f) 
+                                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    width = 1.dp,
+                                    color = if (hasAlarms) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    if (hasAlarms) {
+                                        activeAlarms.forEach { alarm ->
+                                            Text(
+                                                text = "• $alarm",
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                                                color = MaterialTheme.colorScheme.onErrorContainer
+                                            )
+                                        }
+                                    } else {
+                                        Text(
+                                            text = stringResource(R.string.no_alarms),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         if (uiState.showDebug) {
@@ -255,27 +279,6 @@ fun MainContent(
     }
 }
 
-@Preview(showBackground = true, name = "Main Content - Disconnected")
-@Composable
-fun MainContentDisconnectedPreview() {
-    PetFoodDispenserTheme {
-        Surface {
-            MainContent(
-                uiState = UiState(
-                    isConnected = false,
-                    error = "Connection Failed"
-                ),
-                serverIP = "192.168.1.100",
-                onRefresh = {},
-                onModeChange = {},
-                onValueChange = { _, _ -> },
-                onOpenSettings = {},
-                onManualErogate = {}
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true, name = "Main Content - Connected (Local)")
 @Composable
 fun MainContentConnectedLocalPreview() {
@@ -284,7 +287,7 @@ fun MainContentConnectedLocalPreview() {
             MainContent(
                 uiState = UiState(
                     isConnected = true,
-                    dispenserState = DispenserState(mode = "local", cr1 = 2f, cr2 = 3f, cr3 = 4f, alarms = "TANK_EMPTY")
+                    dispenserState = DispenserState(mode = "local", cr1 = 2f, cr2 = 3f, cr3 = 4f, alarmLevel = 1)
                 ),
                 serverIP = "192.168.1.100",
                 onRefresh = {},

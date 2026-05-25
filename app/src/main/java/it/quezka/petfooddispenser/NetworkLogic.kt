@@ -20,11 +20,28 @@ data class DispenserState(
     @SerializedName("cr3_r") val cr3Remote: Float = 1f,
     @SerializedName("mode") val mode: String = "local",
     @SerializedName("test") val testMode: Boolean = false,
-    @SerializedName("alarms") val alarms: String = ""
+    @SerializedName("alarms") val alarms: String = "",
+    @SerializedName("allarmeLivello") val alarmLevel: Int = 0,
+    @SerializedName("allarmeBatteria") val alarmBattery: Int = 0
+)
+
+data class DispenserSettings(
+    @SerializedName("tipo_dispenser") val tipoDispenser: Int = 1,
+    @SerializedName("test") val test: Int = 0,
+    @SerializedName("volume_min") val volumeMin: Int = 0,
+    @SerializedName("prolunghe_serbatoio") val prolungheSerbatoio: Int = 0
 )
 
 data class ErogatingEvent(
     @SerializedName("is_erogating") val isErogating: Int
+)
+
+data class LevelAlarmEvent(
+    @SerializedName("allarmeLivello") val allarmeLivello: Int
+)
+
+data class BatteryAlarmEvent(
+    @SerializedName("allarmeBatteria") val allarmeBatteria: Int
 )
 
 fun interface NetworkManagerFactory {
@@ -39,7 +56,6 @@ class NetworkManager(private val serverIP: String) {
 
     private val sseFactory = EventSources.createFactory(client)
 
-    // Helper to ensure IP has a port, defaults to :80
     private fun formatUrl(path: String): String {
         val baseUrl = if (serverIP.contains(":")) serverIP else "$serverIP:80"
         return "http://$baseUrl/$path"
@@ -49,6 +65,19 @@ class NetworkManager(private val serverIP: String) {
         runCatching {
             val request = Request.Builder()
                 .url(formatUrl("get?t=${System.currentTimeMillis()}"))
+                .build()
+            
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw Exception("HTTP ${response.code}")
+                response.body?.string() ?: throw Exception("Empty body")
+            }
+        }
+    }
+
+    suspend fun fetchSettings(): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            val request = Request.Builder()
+                .url(formatUrl("getImpostazioni"))
                 .build()
             
             client.newCall(request).execute().use { response ->
