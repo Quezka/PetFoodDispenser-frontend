@@ -86,7 +86,6 @@ fun MainContent(
         val pullToRefreshState = rememberPullToRefreshState()
         
         Column(modifier = modifier.fillMaxSize()) {
-            // Scrollable Content
             PullToRefreshBox(
                 isRefreshing = uiState.isProbing,
                 onRefresh = { 
@@ -163,7 +162,6 @@ fun MainContent(
 
                         Spacer(Modifier.height(16.dp))
                         
-                        // Alarm Display Logic
                         val lowFoodMsg = stringResource(R.string.alarm_low_food)
                         val lowBatteryMsg = stringResource(R.string.alarm_low_battery)
                         
@@ -184,9 +182,7 @@ fun MainContent(
                         
                         val hasAlarms = activeAlarms.isNotEmpty()
                         
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 text = stringResource(R.string.alarms_label),
                                 style = MaterialTheme.typography.labelLarge,
@@ -194,9 +190,7 @@ fun MainContent(
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                             Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 80.dp),
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp),
                                 shape = MaterialTheme.shapes.medium,
                                 color = if (hasAlarms) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f) 
                                         else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -245,16 +239,12 @@ fun MainContent(
                 }
             }
 
-            // Permanent Erogate Button at the very bottom
             Button(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onManualErogate()
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(18.dp)
-                    .height(64.dp),
+                modifier = Modifier.fillMaxWidth().padding(18.dp).height(64.dp),
                 enabled = uiState.isConnected && !uiState.isErogating,
                 shape = MaterialTheme.shapes.large,
                 colors = ButtonDefaults.buttonColors(

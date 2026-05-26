@@ -208,13 +208,13 @@ class DispenserViewModel @Inject constructor(
 
     fun manualErogate() {
         val manager = networkManager ?: return
+        // Keep checking the actual current erogation state to prevent spamming if already running
         if (_uiState.value.isErogating || !_uiState.value.isConnected) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isErogating = true) }
-            manager.sendCommand("set", "erogate", "1").onFailure {
-                _uiState.update { it.copy(isErogating = false) }
-            }
+            // Rimosso aggiornamento ottimistico. Il bottone si disabilita solo quando
+            // l'app riceve l'evento SSE dal dispenser.
+            manager.sendCommand("set", "erogate", "1")
         }
     }
 
